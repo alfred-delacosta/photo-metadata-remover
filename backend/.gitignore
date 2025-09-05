@@ -143,3 +143,5 @@ vite.config.ts.timestamp-*
 dev_resources
 
 .env
+src/uploads/*
+!/src/uploads/.gitkeep
