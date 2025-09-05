@@ -7,19 +7,25 @@ import path from 'path';
 import fs from 'fs/promises';
 import crypto from 'crypto';
 import getFileParts from './utils/fileUtils.js';
+// .dotenv initialization
+import '@dotenvx/dotenvx/config'
 
 const app = express();
 const execPromise = promisify(exec);
 const uploadsDir = './src/uploads';
 const processedDir = './src/processed';
+const port = process.env.PORT;
+const environment = process.env.ENVIRONMENT;
 
-// Add CORS middleware
-app.use((req, res, next) => {
-  res.header('Access-Control-Allow-Origin', '*');
-  res.header('Access-Control-Allow-Methods', 'GET, POST');
-  res.header('Access-Control-Allow-Headers', 'Content-Type');
-  next();
-});
+if (environment === 'development') {
+  // Add CORS middleware
+  app.use((req, res, next) => {
+    res.header('Access-Control-Allow-Origin', '*');
+    res.header('Access-Control-Allow-Methods', 'GET, POST');
+    res.header('Access-Control-Allow-Headers', 'Content-Type');
+    next();
+  });
+}
 
 // Serve static files (including index.html)
 app.use(express.static(path.join(path.resolve(), 'public')));
@@ -100,7 +106,7 @@ app.post('/upload', upload.single('file'), async (req, res) => {
 
     // Generate a unique access token
     const accessToken = crypto.randomBytes(16).toString('hex');
-    const expirationTime = Date.now() + 30 * 1000; // 30 seconds from now
+    const expirationTime = Date.now() + 60 * 1000; // 60 seconds from now
 
     // Store token and file info
     fileAccessTokens.set(accessToken, {
@@ -118,7 +124,7 @@ app.post('/upload', upload.single('file'), async (req, res) => {
           console.error(`Failed to delete ${outputPath}:`, err);
         }
       }
-    }, 30 * 1000);
+    }, 120 * 1000);
 
     // Delete original file
     try {
@@ -127,9 +133,11 @@ app.post('/upload', upload.single('file'), async (req, res) => {
       console.error(`Failed to delete ${req.file.path}:`, err);
     }
 
+    // res.redirect(`/image/${outputFilename}?token=${accessToken}`);
+
     // Return unique URL
     const url = `http://${req.get('host')}/image/${outputFilename}?token=${accessToken}`;
-    res.json({ message: 'File processed successfully', url });
+    res.json({ message: 'File processed successfully', url, fileName: outputFilename, accessToken });
   } catch (err) {
     console.error('Image processing error:', err);
     res.status(500).json({
@@ -169,7 +177,8 @@ app.get('/image/:filename', async (req, res) => {
 
 // Serve index.html for all other routes to support React Router
 app.get('/', (req, res) => {
-  res.sendFile(path.join(path.resolve(), 'public', 'index.html'));
+  res.send("Hello")
+  // res.sendFile(path.join(path.resolve(), 'public', 'index.html'));
 });
 
-app.listen(3015, () => console.log('Server running on port 3015'));
+app.listen(port, () => console.log(`Server running on port ${port}`));
