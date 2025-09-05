@@ -70,7 +70,7 @@ const GrokFileUploadModified = () => {
 
   return (
     <Grid container spacing={2}>
-      <Grid item size={12}>
+      <Grid size={12}>
         <Paper sx={{ textAlign: "center", padding: 5}}>
           <Typography fontSize="4rem">
             Image Metadata Remover
@@ -80,7 +80,7 @@ const GrokFileUploadModified = () => {
           </Typography>
         </Paper>
       </Grid>
-      <Grid item size={12}>
+      <Grid size={12}>
         <Paper
           {...getRootProps()}
           sx={{
