@@ -145,3 +145,5 @@ dev_resources
 .env
 src/uploads/*
 !/src/uploads/.gitkeep
+src/processed/*
+!/src/processed/.gitkeep
