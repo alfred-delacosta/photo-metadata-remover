@@ -1,6 +1,9 @@
 // .dotenv initialization
 import '@dotenvx/dotenvx/config'
 
+import multer from 'multer';
+const upload = multer({ dest: 'uploads/' })
+
 
 //#region Express app Setup
 import  express  from 'express';
@@ -14,6 +17,10 @@ app.use(express.urlencoded({ extended: false }));
 
 app.get('/', async (req, res) => {
     res.send('welcome to the API');
+})
+
+app.post('/upload', upload.single('pic'), (req, res) => {
+
 })
   
 app.listen(port, () => {

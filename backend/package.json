@@ -12,6 +12,8 @@
   "type": "module",
   "dependencies": {
     "@dotenvx/dotenvx": "^1.49.0",
-    "express": "^5.1.0"
+    "express": "^5.1.0",
+    "multer": "^2.0.2",
+    "unique-filename": "^4.0.0"
   }
 }
