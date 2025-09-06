@@ -76,10 +76,18 @@ const fileAccessTokens = new Map();
 async function processImage(inputPath, outputPath, extension) {
   let commands = [];
   if (extension === '.HEIC') {
-    commands = [
-      `magick -format jpg "${inputPath}" "${outputPath}"`,
-      `magick.exe mogrify -strip "${outputPath}"`
-    ];
+    if (process.env.OS === 'windows') {
+      commands = [
+        `magick -format jpg "${inputPath}" "${outputPath}"`,
+        `magick.exe mogrify -strip "${outputPath}"`
+      ];
+    }
+    if (process.env.OS === 'linux') {
+      commands = [
+        `convert -format jpg "${inputPath}" "${outputPath}"`,
+        `mogrify -strip "${outputPath}"`
+      ];
+    }
   } else {
     commands = [
       `magick "${inputPath}" -strip "${outputPath}"`,
