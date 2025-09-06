@@ -4,6 +4,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { exec } from 'child_process';
 import { promisify } from 'util';
 import path from 'path';
+import { fileURLToPath } from 'url';
 import fs from 'fs/promises';
 import crypto from 'crypto';
 import getFileParts from './utils/fileUtils.js';
@@ -32,6 +33,7 @@ if (environment === 'development') {
 app.use(express.static(path.join(path.resolve(), 'public')));
 
 // Ensure directories exist
+// TODO - Add a function or check to delete all images in the processedDir in case the server fails and needs to be restarted.
 async function ensureDirectories() {
   for (const dir of [uploadsDir, processedDir]) {
     try {
@@ -57,7 +59,8 @@ const storage = multer.diskStorage({
 const upload = multer({
   storage: storage,
   fileFilter: (req, file, cb) => {
-    const allowedTypes = ['image/jpeg', 'image/png', 'image/heic', 'image/gif', 'image/bmp', 'image/tiff'];
+    // TODO - Write up something more secure than application/octet-stream to handle the .heic files. the image/heic doesn't work...
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/heic', 'application/octet-stream', 'image/gif', 'image/bmp', 'image/tiff'];
     if (allowedTypes.includes(file.mimetype)) {
       cb(null, true);
     } else {
@@ -70,17 +73,27 @@ const upload = multer({
 const fileAccessTokens = new Map();
 
 // Function to try ImageMagick commands
-async function processImage(inputPath, outputPath) {
-  const commands = [
-    `magick "${inputPath}" -strip "${outputPath}"`,
-    `convert "${inputPath}" -strip "${outputPath}"`
-  ];
+async function processImage(inputPath, outputPath, extension) {
+  let commands = [];
+  if (extension === '.HEIC') {
+    commands = [
+      `magick -format jpg "${inputPath}" "${outputPath}"`,
+      `magick.exe mogrify -strip "${outputPath}"`
+    ];
+  } else {
+    commands = [
+      `magick "${inputPath}" -strip "${outputPath}"`,
+      `convert "${inputPath}" -strip "${outputPath}"`
+    ];
+  }
 
   for (const command of commands) {
     try {
       console.log(`Executing command: ${command}`);
       await execPromise(command, { shell: true });
-      return; // Success, exit function
+      if (extension !== '.HEIC') {
+        return; // Success, exit function
+      }
     } catch (err) {
       console.error(`Command failed: ${command}`, err);
       if (command === commands[commands.length - 1]) {
@@ -91,19 +104,24 @@ async function processImage(inputPath, outputPath) {
 }
 
 // Route to handle file upload
-app.post('/upload', upload.single('file'), async (req, res) => {
+app.post('/api/upload', upload.single('file'), async (req, res) => {
   if (!req.file) {
     return res.status(400).json({ error: 'No file uploaded' });
   }
 
   const { filename, originalname } = req.file;
   const { extension } = getFileParts(originalname);
-  const outputFilename = `${uuidv4()}${extension}`;
+  let outputFilename = '';
+  if (extension === '.HEIC') {
+    outputFilename = `${uuidv4()}.jpg`;
+  } else {
+    outputFilename = `${uuidv4()}${extension}`;
+  }
   const outputPath = path.join(processedDir, outputFilename);
 
   try {
     // Process image with ImageMagick
-    await processImage(req.file.path, outputPath);
+    await processImage(req.file.path, outputPath, extension);
 
     // Generate a unique access token
     const accessToken = crypto.randomBytes(16).toString('hex');
@@ -112,6 +130,7 @@ app.post('/upload', upload.single('file'), async (req, res) => {
     // Store token and file info
     fileAccessTokens.set(accessToken, {
       filePath: outputPath,
+      fileName: outputFilename,
       expirationTime
     });
 
@@ -134,10 +153,14 @@ app.post('/upload', upload.single('file'), async (req, res) => {
       console.error(`Failed to delete ${req.file.path}:`, err);
     }
 
-    // res.redirect(`/image/${outputFilename}?token=${accessToken}`);
-
     // Return unique URL
-    const url = `http://${req.get('host')}/image/${outputFilename}?token=${accessToken}`;
+    let url = '';
+    if (process.env.ENVIRONMENT === 'development') {
+      url = `http://${req.get('host')}/image/${outputFilename}?token=${accessToken}`;
+    } else {
+      url = `/api/image/${outputFilename}?token=${token}`;
+    }
+
     res.json({ message: 'File processed successfully', url, fileName: outputFilename, accessToken });
   } catch (err) {
     console.error('Image processing error:', err);
@@ -149,7 +172,7 @@ app.post('/upload', upload.single('file'), async (req, res) => {
 });
 
 // Route to serve processed image
-app.get('/image/:filename', async (req, res) => {
+app.get('/api/image/:filename', async (req, res) => {
   const { filename } = req.params;
   const { token } = req.query;
 
@@ -176,8 +199,25 @@ app.get('/image/:filename', async (req, res) => {
   });
 });
 
+// Route to get image url
+app.get('/api/imageUrl', async (req, res) => {
+  const { token } = req.query;
+
+  if (!token || !fileAccessTokens.has(token)) {
+    return res.status(403).json({ error: 'Invalid or missing token' });
+  }
+  const fileInfo = fileAccessTokens.get(token);
+  if (process.env.ENVIRONMENT === 'development') {
+    const url = `http://${req.get('host')}/api/image/${fileInfo.fileName}?token=${token}`;
+    res.send(url)
+  } else {
+    const url = `/api/image/${fileInfo.fileName}?token=${token}`;
+    res.send(url)
+  }
+})
+
 // Route to get remaining time for image
-app.get('/countdown', async (req, res) => {
+app.get('/api/countdown', async (req, res) => {
   const { token } = req.query;
 
   if (!token || !fileAccessTokens.has(token)) {
@@ -189,14 +229,20 @@ app.get('/countdown', async (req, res) => {
 })
 
 // Route to get the expiration time
-app.get('/expirationTime', async (req, res) => {
+app.get('/api/expirationTime', async (req, res) => {
   res.send(process.env.LINK_EXPIRATION_MINUTES)
 })
 
-// Serve index.html for all other routes to support React Router
-app.get('/', (req, res) => {
-  res.send("Hello")
-  // res.sendFile(path.join(path.resolve(), 'public', 'index.html'));
-});
+if (process.env.ENVIRONMENT === "production") {
+  const __filename = fileURLToPath(import.meta.url);
+  const __dirname = path.dirname(__filename);
+
+  // To make the node server serve the contents of the dist folder in the frontend/dist
+  app.use(express.static(path.join(__dirname, "../../frontend/dist")));
+
+  app.get("/", (req, res) => {
+    res.sendFile(path.join(__dirname, "../../frontend", "dist", "index.html"));
+  });
+}
 
 app.listen(port, () => console.log(`Server running on port ${port}`));

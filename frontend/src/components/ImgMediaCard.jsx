@@ -11,25 +11,29 @@ import ShareIcon from "@mui/icons-material/Share";
 import { Link } from "react-router";
 import toast from "react-hot-toast";
 import axios from "axios";
+import api from "../lib/axios";
 import { useNavigate } from "react-router";
 import Countdown from "react-countdown";
 
 export default function ImgMediaCard({ fileName, token }) {
   const [imageExists, setImageExists] = useState(false);
   const [linkCountdown, setLinkCountdown] = useState(0);
+  const [imageLink, setImageLink] = useState('');
   const navigate = useNavigate();
 
   useEffect(() => {
     const confirmImageExists = async () => {
       try {
-        const res = await axios.get(
-          `http://localhost:3015/image/${fileName}?token=${token}`
+        const res = await api.get(
+          `/image/${fileName}?token=${token}`
         );
-        const resCountdown = await axios.get(
-          `http://localhost:3015/countdown?token=${token}`
+        const resCountdown = await api.get(
+          `/countdown?token=${token}`
         );
+        const resImageUrl = await api.get(`/imageUrl?token=${token}`);
         setImageExists(true);
         setLinkCountdown(resCountdown.data);
+        setImageLink(resImageUrl.data);
       } catch (error) {
         setImageExists(false);
         navigate(`/NotFound`);
@@ -56,7 +60,7 @@ export default function ImgMediaCard({ fileName, token }) {
           component="img"
           alt="uploaded image"
           height="500"
-          image={`http://localhost:3015/image/${fileName}?token=${token}`}
+          image={imageLink}
         />
         <CardActions sx={{ padding: "3rem" }}>
           <Grid
