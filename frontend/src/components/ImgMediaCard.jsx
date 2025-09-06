@@ -1,11 +1,9 @@
 import { useState, useEffect } from "react";
 import Card from "@mui/material/Card";
 import CardActions from "@mui/material/CardActions";
-import CardContent from "@mui/material/CardContent";
 import CardMedia from "@mui/material/CardMedia";
-import { Grid, Box } from "@mui/material";
+import { Grid } from "@mui/material";
 import Button from "@mui/material/Button";
-import Paper from "@mui/material/Paper";
 import Typography from "@mui/material/Typography";
 import DownloadIcon from "@mui/icons-material/Download";
 import HomeIcon from "@mui/icons-material/Home";
@@ -43,11 +41,8 @@ export default function ImgMediaCard({ fileName, token }) {
 
   function copyLink() {
     try {
-    let currentUrl = window.location.href;
-    console.log(currentUrl)
-      navigator.clipboard.writeText(
-        `${currentUrl}`
-      );
+      let currentUrl = window.location.href;
+      navigator.clipboard.writeText(`${currentUrl}`);
       toast.success("Link copied!");
     } catch (error) {
       toast.error("Uh oh! Something went wrong!");
@@ -114,9 +109,9 @@ export default function ImgMediaCard({ fileName, token }) {
               </Link>
             </Grid>
             <Grid size={12} textAlign="center" marginTop={3}>
-                <Typography variant="h4">
-                    Link expires in <Countdown date={linkCountdown} />
-                </Typography>
+              <Typography variant="h4">
+                Link expires in <Countdown date={linkCountdown} />
+              </Typography>
             </Grid>
           </Grid>
         </CardActions>

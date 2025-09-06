@@ -16,6 +16,7 @@ const uploadsDir = './src/uploads';
 const processedDir = './src/processed';
 const port = process.env.PORT;
 const environment = process.env.ENVIRONMENT;
+const expirationTimeInSeconds = ((process.env.LINK_EXPIRATION_MINUTES * 60) * 1000);
 
 if (environment === 'development') {
   // Add CORS middleware
@@ -106,7 +107,7 @@ app.post('/upload', upload.single('file'), async (req, res) => {
 
     // Generate a unique access token
     const accessToken = crypto.randomBytes(16).toString('hex');
-    const expirationTime = Date.now() + process.env.LINK_EXPIRATION_MINUTES * 60 * 1000; // 60 seconds from now
+    const expirationTime = Date.now() + expirationTimeInSeconds; // 60 seconds from now
 
     // Store token and file info
     fileAccessTokens.set(accessToken, {
@@ -124,7 +125,7 @@ app.post('/upload', upload.single('file'), async (req, res) => {
           console.error(`Failed to delete ${outputPath}:`, err);
         }
       }
-    }, 120 * 1000);
+    }, expirationTimeInSeconds);
 
     // Delete original file
     try {
@@ -185,6 +186,11 @@ app.get('/countdown', async (req, res) => {
   const fileInfo = fileAccessTokens.get(token);
 
   res.send(fileInfo.expirationTime)
+})
+
+// Route to get the expiration time
+app.get('/expirationTime', async (req, res) => {
+  res.send(process.env.LINK_EXPIRATION_MINUTES)
 })
 
 // Serve index.html for all other routes to support React Router
