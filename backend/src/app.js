@@ -260,7 +260,7 @@ if (process.env.ENVIRONMENT === "production") {
   // To make the node server serve the contents of the dist folder in the frontend/dist
   app.use(express.static(path.join(__dirname, "../../frontend/dist")));
 
-  app.get("/", (req, res) => {
+  app.all("/*splat/", (req, res) => {
     res.sendFile(path.join(__dirname, "../../frontend", "dist", "index.html"));
   });
 }
