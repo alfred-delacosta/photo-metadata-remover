@@ -83,15 +83,15 @@ Follow these steps to set up and run the Photo Metadata Remover locally.
 
 ```plaintext
 photo-metadata-remover/
-├── client/                    # React.js frontend
+├── frontend/                  # React.js frontend
 │   ├── src/
 │   │   ├── components/        # Reusable React components
 │   │   ├── App.js             # Main React app
 │   │   └── index.js           # Entry point
-├── server/                    # Node.js/Express.js backend
+├── backend/                   # Node.js/Express.js backend
 │   ├── routes/                # API routes
 │   ├── middleware/            # Multer for file uploads
-│   └── server.js              # Main server file
+│   └── app.js                 # Main server file
 ├── .env-sample                # Template for environment variables
 ├── package.json               # Project dependencies
 └── README.md                  # You're here! 📖
