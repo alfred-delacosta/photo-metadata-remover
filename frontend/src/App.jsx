@@ -18,12 +18,13 @@ background: linear-gradient(30deg, rgba(13, 101, 184, 1) 11%, rgba(17, 131, 237,
         height={"100vh"}
       >
         <Routes>
-          <Route path="/notfound" element={<NotFound />} />
           <Route path="/" element={<FileUpload />} />
           <Route
             path="/viewImage/:fileName"
             element={<ViewImage />}
           />
+          <Route path="/notfound" element={<NotFound />} />
+          <Route path="/*" element={<NotFound />} />
         </Routes>
       </Grid>
     </>
