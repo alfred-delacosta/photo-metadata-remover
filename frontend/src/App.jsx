@@ -7,6 +7,7 @@ import ViewImage from "./pages/ViewImage";
 import TutorialFileUpload from "./components/TutorialFileUpload";
 import Grid from "@mui/material/Grid";
 import CssBaseline from "@mui/material/CssBaseline";
+import NotFound from "./pages/NotFound";
 
 function App() {
   const [count, setCount] = useState(0);
@@ -23,6 +24,7 @@ background: linear-gradient(30deg, rgba(13, 101, 184, 1) 11%, rgba(17, 131, 237,
         height={"100vh"}
       >
         <Routes>
+          <Route path="/notfound" element={<NotFound />} />
           <Route path="/" element={<GrokFileUploadModified />} />
           <Route
             path="/viewImage/:fileName"

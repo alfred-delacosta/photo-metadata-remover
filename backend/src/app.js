@@ -106,7 +106,7 @@ app.post('/upload', upload.single('file'), async (req, res) => {
 
     // Generate a unique access token
     const accessToken = crypto.randomBytes(16).toString('hex');
-    const expirationTime = Date.now() + 60 * 1000; // 60 seconds from now
+    const expirationTime = Date.now() + process.env.LINK_EXPIRATION_MINUTES * 60 * 1000; // 60 seconds from now
 
     // Store token and file info
     fileAccessTokens.set(accessToken, {
@@ -174,6 +174,18 @@ app.get('/image/:filename', async (req, res) => {
     }
   });
 });
+
+// Route to get remaining time for image
+app.get('/countdown', async (req, res) => {
+  const { token } = req.query;
+
+  if (!token || !fileAccessTokens.has(token)) {
+    return res.status(403).json({ error: 'Invalid or missing token' });
+  }
+  const fileInfo = fileAccessTokens.get(token);
+
+  res.send(fileInfo.expirationTime)
+})
 
 // Serve index.html for all other routes to support React Router
 app.get('/', (req, res) => {

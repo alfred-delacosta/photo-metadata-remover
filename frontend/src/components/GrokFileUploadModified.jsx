@@ -45,10 +45,6 @@ const GrokFileUploadModified = () => {
         },
       });
 
-      // Send to the next page. TODO Fix this to move to the next page in react as opposed to the API.
-      // location.href = res.data.url;
-      console.log(res.data);
-
       setStatus("success");
       setUploadProgress(100);
       toast.success("Image uploaded!");
