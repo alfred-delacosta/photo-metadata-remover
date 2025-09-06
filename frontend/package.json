@@ -16,6 +16,7 @@
     "@mui/icons-material": "^7.3.2",
     "@mui/material": "^7.3.2",
     "axios": "^1.11.0",
+    "photo-metadata-remover": "file:..",
     "react": "^19.1.1",
     "react-countdown": "^2.3.6",
     "react-dom": "^19.1.1",
