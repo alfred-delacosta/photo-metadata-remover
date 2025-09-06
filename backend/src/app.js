@@ -158,7 +158,7 @@ app.post('/api/upload', upload.single('file'), async (req, res) => {
     if (process.env.ENVIRONMENT === 'development') {
       url = `http://${req.get('host')}/image/${outputFilename}?token=${accessToken}`;
     } else {
-      url = `/api/image/${outputFilename}?token=${token}`;
+      url = `/api/image/${outputFilename}?token=${accessToken}`;
     }
 
     res.json({ message: 'File processed successfully', url, fileName: outputFilename, accessToken });
