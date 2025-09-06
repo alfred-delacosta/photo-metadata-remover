@@ -216,6 +216,18 @@ app.get('/api/imageUrl', async (req, res) => {
   }
 })
 
+// Route to get image filename
+app.get('/api/imageName', async (req, res) => {
+  const { token } = req.query;
+
+  if (!token || !fileAccessTokens.has(token)) {
+    return res.status(403).json({ error: 'Invalid or missing token' });
+  }
+  const fileInfo = fileAccessTokens.get(token);
+  res.send(fileInfo.fileName)
+})
+
+
 // Route to get remaining time for image
 app.get('/api/countdown', async (req, res) => {
   const { token } = req.query;

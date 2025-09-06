@@ -19,21 +19,20 @@ export default function ImgMediaCard({ fileName, token }) {
   const [imageExists, setImageExists] = useState(false);
   const [linkCountdown, setLinkCountdown] = useState(0);
   const [imageLink, setImageLink] = useState('');
+  const [imageName, setImageName] = useState('');
   const navigate = useNavigate();
 
   useEffect(() => {
     const confirmImageExists = async () => {
       try {
-        const res = await api.get(
-          `/image/${fileName}?token=${token}`
-        );
-        const resCountdown = await api.get(
-          `/countdown?token=${token}`
-        );
+        const res = await api.get(`/image/${fileName}?token=${token}`);
+        const resCountdown = await api.get(`/countdown?token=${token}`);
         const resImageUrl = await api.get(`/imageUrl?token=${token}`);
+        const resImageName = await api.get(`/imageName?token=${token}`);
         setImageExists(true);
         setLinkCountdown(resCountdown.data);
         setImageLink(resImageUrl.data);
+        setImageName(resImageName.data);
       } catch (error) {
         setImageExists(false);
         navigate(`/NotFound`);
@@ -78,6 +77,8 @@ export default function ImgMediaCard({ fileName, token }) {
                 variant="contained"
                 size="large"
                 startIcon={<DownloadIcon />}
+                href={imageLink}
+                download={imageName}
               >
                 Download
               </Button>
