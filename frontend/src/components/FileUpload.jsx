@@ -9,7 +9,7 @@ import {
 } from "@mui/material";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import LinearProgress from "@mui/material/LinearProgress";
-import axios from "axios";
+import api from "../lib/axios";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router";
 
@@ -30,7 +30,7 @@ const FileUpload = () => {
     formData.append("file", file);
 
     try {
-      const res = await axios.post("http://localhost:3015/upload", formData, {
+      const res = await api.post("/upload", formData, {
         headers: {
           "Content-Type": "multipart/form-data",
         },
@@ -62,7 +62,7 @@ const FileUpload = () => {
 
   useEffect(() => {
     const getExpirationTime = async () => {
-      const res = await axios.get('http://localhost:3015/expirationTime');
+      const res = await api.get('/expirationTime');
       setExpirationTime(res.data);
     }
 

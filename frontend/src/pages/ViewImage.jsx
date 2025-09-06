@@ -1,6 +1,4 @@
-import { useEffect } from "react";
-import { useState } from "react";
-import { Link, useNavigate, useParams, useSearchParams } from "react-router";
+import { useParams, useSearchParams } from "react-router";
 import ImgMediaCard from "../components/ImgMediaCard";
 import { Grid } from "@mui/material";
 
