@@ -42,10 +42,10 @@ export default function ImgMediaCard({ fileName, token }) {
     confirmImageExists();
   }, []);
 
-  function copyLink() {
+  async function copyLink() {
     try {
       let currentUrl = window.location.href;
-      navigator.clipboard.writeText(`${currentUrl}`);
+      await navigator.clipboard.writeText(`${currentUrl}`);
       toast.success("Link copied!");
     } catch (error) {
       toast.error("Uh oh! Something went wrong!");
