@@ -72,18 +72,18 @@ const FileUpload = () => {
   const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop });
 
   return (
-    <Grid container spacing={2}>
-      <Grid size={12}>
+    <Grid container spacing={2} justifyContent={"space-around"}>
+      <Grid size={{ xs:11, sm:12 }} marginTop={1}>
         <Paper sx={{ textAlign: "center", padding: 5}}>
           <Typography fontSize="4rem">
-            Image Metadata Remover
+            Photo Metadata Remover
           </Typography>
           <Typography variant="subtitle1">
-            Upload an image to remove the metadata from it. <strong>The link with the new image will expire in {expirationTime} minutes.</strong>
+            Upload a photo or image to remove the metadata from it. <strong>The link with the new image will expire in {expirationTime} minutes.</strong>
           </Typography>
         </Paper>
       </Grid>
-      <Grid size={12}>
+      <Grid size={{ xs:11, sm:12 }} marginBottom={1}>
         <Paper
           {...getRootProps()}
           sx={{
