@@ -2,7 +2,7 @@
 
 Welcome to the **Photo Metadata Remover**, a powerful web application designed to strip metadata from images effortlessly using **ImageMagick**. Built with **Node.js**, **Express.js**, **React.js**, and **Material UI**, this app combines performance with a modern, user-friendly interface. 🚀 It also includes an automatic cleanup feature to delete processed images from the server after a set time for enhanced security. 🕒
 
-🔗 https://pmr.ajscreation.com 
+🔗 👉🏻 https://pmr.ajscreation.com 
 
 ## ✨ Features
 
