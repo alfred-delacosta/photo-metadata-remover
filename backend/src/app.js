@@ -76,7 +76,8 @@ const fileAccessTokens = new Map();
 async function processImage(inputPath, outputPath, extension) {
   let commands = [];
   if (extension === '.HEIC') {
-    if (process.env.OS === 'windows') {
+    const operatingSystem = process.env.OS.toLowerCase();
+    if (operatingSystem.includes('windows')) {
       commands = [
         `magick -format jpg "${inputPath}" "${outputPath}"`,
         `magick.exe mogrify -strip "${outputPath}"`
