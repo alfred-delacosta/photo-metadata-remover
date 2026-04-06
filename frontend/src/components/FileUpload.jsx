@@ -135,31 +135,37 @@ const onDrop = useCallback((acceptedFiles) => {
     <Grid container spacing={2} sx={{ maxWidth: 800, mx: "auto" }}>
       <Grid item xs={12}>
         <Typography variant="h4" align="center" gutterBottom sx={{ color: 'primary.main' }}>
-          📤 Upload Photos
+          🖼️ Photo Metadata Remover
         </Typography>
         <Typography variant="subtitle1" align="center" gutterBottom>
           Upload up to 5 photos. Processed images available for {expirationTime} minutes.
         </Typography>
       </Grid>
       <Grid item xs={12} sm={6}>
-        <FormControl fullWidth>
-          <InputLabel>Preset</InputLabel>
-          <Select value={preset} label="Preset" onChange={(e) => setPreset(e.target.value)}>
-            <MenuItem value="low">Low</MenuItem>
-            <MenuItem value="medium">Medium</MenuItem>
-            <MenuItem value="high">High</MenuItem>
-            <MenuItem value="orig">Original</MenuItem>
-          </Select>
-        </FormControl>
+        <Paper sx={{ p: 3 }}>
+          <Typography variant="h6" gutterBottom sx={{ color: 'primary.main' }}>🎨 Preset</Typography>
+          <FormControl fullWidth>
+            <InputLabel>Preset</InputLabel>
+            <Select value={preset} label="Preset" onChange={(e) => setPreset(e.target.value)}>
+              <MenuItem value="low">Low (1280x720)</MenuItem>
+              <MenuItem value="medium">Medium (1920x1080)</MenuItem>
+              <MenuItem value="high">High (3840x2160)</MenuItem>
+              <MenuItem value="orig">Original</MenuItem>
+            </Select>
+          </FormControl>
+        </Paper>
       </Grid>
       <Grid item xs={12} sm={6}>
-        <FormControl fullWidth>
-          <InputLabel>Format</InputLabel>
-          <Select value={format} label="Format" onChange={(e) => setFormat(e.target.value)}>
-            <MenuItem value="jpeg">JPEG</MenuItem>
-            <MenuItem value="webp">WebP</MenuItem>
-          </Select>
-        </FormControl>
+        <Paper sx={{ p: 3 }}>
+          <Typography variant="h6" gutterBottom sx={{ color: 'primary.main' }}>📁 Format</Typography>
+          <FormControl fullWidth>
+            <InputLabel>Format</InputLabel>
+            <Select value={format} label="Format" onChange={(e) => setFormat(e.target.value)}>
+              <MenuItem value="jpeg">JPEG</MenuItem>
+              <MenuItem value="webp">WebP</MenuItem>
+            </Select>
+          </FormControl>
+        </Paper>
       </Grid>
       <Grid item xs={12}>
         <Paper
