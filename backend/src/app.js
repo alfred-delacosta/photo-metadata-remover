@@ -192,8 +192,8 @@ app.post('/api/upload', upload.fields([{ name: 'files', maxCount: 5 }, { name: '
     }
   }
   setTimeout(() => cleanupSession(sessionId), expirationTimeInSeconds);
-  console.log('Sending response with sessionId:', sessionId);
-  res.json({ sessionId });
+  console.log('Sending response with sessionId:', sessionId, 'expTime:', session.expTime);
+  res.json({ sessionId, expTime: session.expTime });
 });
 
 app.post('/api/reprocess', async (req, res) => {

@@ -1,15 +1,17 @@
 import { createTheme } from '@mui/material/styles';
 
-const theme = createTheme({
+const getTheme = (mode) => createTheme({
   palette: {
+    mode,
     primary: {
-      main: '#1976d2', // Blue
+      main: mode === 'dark' ? '#90caf9' : '#1976d2', // Lighter blue for dark
     },
     secondary: {
-      main: '#f5f5f5', // Light grey
+      main: mode === 'dark' ? '#424242' : '#f5f5f5', // Dark grey for dark
     },
     background: {
-      default: '#ffffff', // White
+      default: mode === 'dark' ? '#121212' : '#ffffff', // Dark bg
+      paper: mode === 'dark' ? '#1e1e1e' : '#ffffff',
     },
   },
   typography: {
@@ -42,7 +44,7 @@ const theme = createTheme({
       styleOverrides: {
         root: {
           borderRadius: 12,
-          boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+          boxShadow: mode === 'dark' ? '0 4px 12px rgba(0,0,0,0.3)' : '0 4px 12px rgba(0,0,0,0.1)',
         },
       },
     },
@@ -50,11 +52,11 @@ const theme = createTheme({
       styleOverrides: {
         root: {
           borderRadius: 12,
-          boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+          boxShadow: mode === 'dark' ? '0 4px 12px rgba(0,0,0,0.3)' : '0 4px 12px rgba(0,0,0,0.1)',
         },
       },
     },
   },
 });
 
-export default theme;
+export default getTheme;

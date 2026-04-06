@@ -14,7 +14,7 @@ import toast from "react-hot-toast";
 import api from "../lib/axios";
 import { useNavigate } from "react-router";
 import Countdown from "react-countdown";
-import { Visibility } from "@mui/icons-material";
+import { Visibility, Settings } from "@mui/icons-material";
 
 export default function ImgMediaCard({ file, isResults = false, expTime }) {
   const { url, origSize, newSize, preset, format, origName, filename, token, error } = file || {};
@@ -90,7 +90,7 @@ async function copyLink() {
         >
           {isResults ? (
             <>
-              <Grid item xs={4}>
+              <Grid item xs={3}>
                 <Button
                   variant="contained"
                   size="small"
@@ -98,10 +98,21 @@ async function copyLink() {
                   onClick={() => window.open(`/viewImage/${filename}?token=${token}`, "_blank")}
                   fullWidth
                 >
-                  👁️ View
+                  View
                 </Button>
               </Grid>
-              <Grid item xs={4}>
+              <Grid item xs={3}>
+                <Button
+                  variant="contained"
+                  size="small"
+                  startIcon={<Settings />}
+                  onClick={() => window.open(`/viewImage/${filename}?token=${token}`, "_blank")}
+                  fullWidth
+                >
+                  Resize
+                </Button>
+              </Grid>
+              <Grid item xs={3}>
                 <Button
                   variant="contained"
                   size="small"
@@ -109,10 +120,10 @@ async function copyLink() {
                   onClick={copyLink}
                   fullWidth
                 >
-                  🔗 Share
+                  Share
                 </Button>
               </Grid>
-              <Grid item xs={4}>
+              <Grid item xs={3}>
                 <Button
                   variant="contained"
                   size="small"
@@ -121,7 +132,7 @@ async function copyLink() {
                   download={imageName}
                   fullWidth
                 >
-                  📥 Download
+                  Download
                 </Button>
               </Grid>
             </>
@@ -166,12 +177,17 @@ async function copyLink() {
             </>
           )}
         </Grid>
-        {isResults && (
+        {isResults && expTime > Date.now() && (
           <Box sx={{ textAlign: 'center', mt: 2 }}>
             <Typography variant="body2" color="text.secondary" gutterBottom>
-              🕒 Expires in:
+              Expires in:
             </Typography>
-            <Countdown date={expTime} />
+            <Countdown
+              date={expTime}
+              renderer={({ hours, minutes, seconds }) => (
+                <span>{hours.toString().padStart(2, '0')}:{minutes.toString().padStart(2, '0')}:{seconds.toString().padStart(2, '0')}</span>
+              )}
+            />
           </Box>
         )}
       </CardActions>
