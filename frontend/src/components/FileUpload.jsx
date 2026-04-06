@@ -13,6 +13,7 @@ import {
   LinearProgress,
   Chip,
   Avatar,
+  Link,
 } from "@mui/material";
 import { CloudUpload, PhotoCamera, Settings, Visibility } from "@mui/icons-material";
 import api from "../lib/axios";
@@ -132,15 +133,16 @@ const onDrop = useCallback((acceptedFiles) => {
   });
 
   return (
-    <Grid container spacing={2} sx={{ maxWidth: 800, mx: "auto" }}>
-      <Grid item xs={12}>
-        <Typography variant="h4" align="center" gutterBottom sx={{ color: 'primary.main' }}>
-          🖼️ Photo Metadata Remover
-        </Typography>
-        <Typography variant="subtitle1" align="center" gutterBottom>
-          Upload up to 5 photos. Processed images available for {expirationTime} minutes.
-        </Typography>
-      </Grid>
+    <Box>
+      <Grid container spacing={2} sx={{ maxWidth: 800, mx: "auto" }}>
+        <Grid item xs={12}>
+          <Typography variant="h4" align="center" gutterBottom sx={{ color: 'primary.main' }}>
+            🖼️ Photo Metadata Remover
+          </Typography>
+          <Typography variant="subtitle1" align="center" gutterBottom>
+            Upload up to 5 photos. Processed images available for {expirationTime} minutes.
+          </Typography>
+        </Grid>
       <Grid item xs={12} sm={6}>
         <Paper sx={{ p: 3 }}>
           <Typography variant="h6" gutterBottom sx={{ color: 'primary.main' }}>🎨 Preset</Typography>
@@ -280,7 +282,13 @@ const onDrop = useCallback((acceptedFiles) => {
           </Box>
         </Grid>
       )}
-    </Grid>
+      </Grid>
+      <Box sx={{ textAlign: 'center', mt: 4, pb: 2 }}>
+        <Typography variant="body2" color="text.secondary">
+          Created by <Link href="https://alfred-delacosta.github.io" target="_blank" rel="noopener noreferrer" color="primary.main">Alfred De La Costa</Link> with help by <Link href="https://x.ai/" target="_blank" rel="noopener noreferrer" color="primary.main">Grok</Link>
+        </Typography>
+      </Box>
+    </Box>
   );
 };
 
