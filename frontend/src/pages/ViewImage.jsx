@@ -41,7 +41,7 @@ const ViewImage = () => {
 
   const handleReprocess = async () => {
     try {
-      const res = await api.post(`/api/reprocess?token=${token}`, { preset, format });
+      const res = await api.post(`/reprocess?token=${token}`, { preset, format });
       setImageUrl(res.data.url);
       setDetails(prev => ({
         ...prev,
@@ -91,7 +91,7 @@ const ViewImage = () => {
             <Typography variant="body1">
               Original: {(details.origSize / 1024).toFixed(0)} KB → New: {(details.newSize / 1024).toFixed(0)} KB
               <br />
-              <strong>{((1 - details.newSize / details.origSize) * 100).toFixed(0)}% smaller</strong>
+              <strong>{details.origSize > 0 ? ((1 - details.newSize / details.origSize) * 100).toFixed(0) + '% smaller' : 'Size reduction: N/A'}</strong>
             </Typography>
             <Box sx={{ mt: 3 }}>
               <Typography variant="body2" color="text.secondary" gutterBottom>

@@ -9,12 +9,17 @@ import getFileParts from './utils/fileUtils.js';
 import sharp from 'sharp';
 import '@dotenvx/dotenvx/config'
 
+console.log('ENVIRONMENT:', process.env.ENVIRONMENT);
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
 const app = express();
-const uploadsDir = './src/uploads';
-const processedDir = './src/processed';
+const uploadsDir = path.join(__dirname, 'uploads');
+const processedDir = path.join(__dirname, 'processed');
 const port = process.env.PORT;
 const environment = process.env.ENVIRONMENT;
-const expirationTimeInSeconds = ((process.env.LINK_EXPIRATION_MINUTES * 60) * 1000);
+const expirationTimeInSeconds = parseInt(process.env.LINK_EXPIRATION_MINUTES) * 60 * 1000;
 const sessions = new Map();
 const progressMap = new Map();
 const fileAccessTokens = new Map();
@@ -61,6 +66,19 @@ async function ensureDirectories() {
 }
 ensureDirectories();
 
+// Cleanup expired sessions and tokens on startup
+for (const [sessionId, session] of sessions.entries()) {
+  if (Date.now() > session.expTime) {
+    cleanupSession(sessionId);
+  }
+}
+
+for (const [token, info] of fileAccessTokens.entries()) {
+  if (Date.now() > info.expirationTime) {
+    cleanupToken(token);
+  }
+}
+
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     cb(null, uploadsDir);
@@ -84,18 +102,20 @@ const upload = multer({
 });
 
 async function processBuffer(buffer, outputPath, preset, format) {
+  console.log('Processing image to', outputPath, 'preset:', preset, 'format:', format);
   let image = sharp(buffer).withMetadata(false);
   if (preset.maxWidth !== Infinity) {
     image = image.resize({ width: preset.maxWidth, height: preset.maxHeight, fit: 'inside', withoutEnlargement: true });
   }
   if (format === 'jpeg') {
-    image = image.jpeg({ quality: preset.quality, mozjpeg: true });
+    image = image.jpeg({ quality: preset.quality });
   } else if (format === 'webp') {
     image = image.webp({ quality: preset.quality });
   } else {
     image = image.toFormat(format);
   }
   await image.toFile(outputPath);
+  console.log('Processing complete for', outputPath);
 }
 
 async function cleanupSession(sessionId) {
@@ -111,6 +131,7 @@ async function cleanupSession(sessionId) {
 }
 
 app.post('/api/upload', upload.fields([{ name: 'files', maxCount: 5 }, { name: 'file', maxCount: 1 }]), async (req, res) => {
+  console.log('Upload request received');
   const { preset: presetName = 'medium', format = 'jpeg' } = req.body;
   const preset = presets[presetName];
   if (!preset) {
@@ -120,10 +141,12 @@ app.post('/api/upload', upload.fields([{ name: 'files', maxCount: 5 }, { name: '
     return res.status(400).json({ error: 'Invalid format' });
   }
   const files = req.files ? Object.values(req.files).flat() : [];
+  console.log('Files received:', files.length);
   if (files.length === 0) {
     return res.status(400).json({ error: 'No files uploaded' });
   }
   const sessionId = uuidv4();
+  console.log('SessionId created:', sessionId);
   const session = { files: [], expTime: Date.now() + expirationTimeInSeconds };
   const progress = { processed: 0, total: files.length };
   sessions.set(sessionId, session);
@@ -169,6 +192,7 @@ app.post('/api/upload', upload.fields([{ name: 'files', maxCount: 5 }, { name: '
     }
   }
   setTimeout(() => cleanupSession(sessionId), expirationTimeInSeconds);
+  console.log('Sending response with sessionId:', sessionId);
   res.json({ sessionId });
 });
 
@@ -255,6 +279,7 @@ app.get('/api/image/:filename', async (req, res) => {
     await cleanupToken(token);
     return res.status(403).json({ error: 'URL has expired' });
   }
+  res.set('Cache-Control', 'private, max-age=300'); // Cache for 5 minutes, matching link expiration
   res.sendFile(path.resolve(fileInfo.filePath), err => {
     if (err) {
       console.error('File serving error:', err);
@@ -279,7 +304,7 @@ app.get('/api/imageUrl', async (req, res) => {
   } else {
     url = `/api/image/${fileInfo.filename}?token=${token}`;
   }
-  res.send(url)
+  res.send(url);
 })
 
 app.get('/api/imageName', async (req, res) => {
@@ -292,7 +317,7 @@ app.get('/api/imageName', async (req, res) => {
     await cleanupToken(token);
     return res.status(403).json({ error: 'URL has expired' });
   }
-  res.send(fileInfo.filename || fileInfo.origName)
+  res.send(fileInfo.filename || fileInfo.origName);
 })
 
 app.get('/api/countdown', async (req, res) => {
@@ -305,7 +330,7 @@ app.get('/api/countdown', async (req, res) => {
     await cleanupToken(token);
     return res.status(403).json({ error: 'URL has expired' });
   }
-  res.send(fileInfo.expirationTime)
+  res.send(fileInfo.expirationTime);
 })
 
 app.get('/api/imageDetails', async (req, res) => {
@@ -328,16 +353,25 @@ app.get('/api/imageDetails', async (req, res) => {
 });
 
 app.get('/api/expirationTime', async (req, res) => {
-  res.send(process.env.LINK_EXPIRATION_MINUTES)
+  res.send(process.env.LINK_EXPIRATION_MINUTES);
 })
 
 if (process.env.ENVIRONMENT === "production") {
   const __filename = fileURLToPath(import.meta.url);
   const __dirname = path.dirname(__filename);
+
+  // To make the node server serve the contents of the dist folder in the frontend/dist
   app.use(express.static(path.join(__dirname, "../../frontend/dist")));
+
   app.all("/*splat/", (req, res) => {
     res.sendFile(path.join(__dirname, "../../frontend", "dist", "index.html"));
   });
 }
+
+// Error handling middleware
+app.use((err, req, res, next) => {
+  console.error('Error:', err);
+  res.status(500).json({ error: 'Internal server error' });
+});
 
 app.listen(port, () => console.log(`Server running on port ${port}`));

@@ -11,8 +11,10 @@ import {
   Select,
   MenuItem,
   LinearProgress,
+  Chip,
+  Avatar,
 } from "@mui/material";
-import CloudUploadIcon from "@mui/icons-material/CloudUpload";
+import { CloudUpload, PhotoCamera, Settings, Visibility } from "@mui/icons-material";
 import api from "../lib/axios";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router";
@@ -27,6 +29,8 @@ const FileUpload = () => {
   const [format, setFormat] = useState('jpeg');
   const [sessionId, setSessionId] = useState(null);
   const [progress, setProgress] = useState({processed: 0, total: 0});
+  const [processedFiles, setProcessedFiles] = useState([]);
+  const [hasPrevious, setHasPrevious] = useState(false);
 
   const handleUpload = useCallback(async (files) => {
     if (!files || files.length === 0) return;
@@ -40,7 +44,7 @@ const FileUpload = () => {
     formData.append("format", format);
 
     try {
-      const res = await api.post("/api/upload", formData, {
+      const res = await api.post("/upload", formData, {
         headers: {
           "Content-Type": "multipart/form-data",
         },
@@ -56,9 +60,9 @@ const FileUpload = () => {
       setStatus("processing");
       toast.success("Upload complete, processing...");
     } catch (error) {
+      console.error("Upload error:", error);
       setStatus("error");
       setUploadProgress(0);
-      console.log(error);
       toast.error("Upload Error!");
     }
   }, [preset, format]);
@@ -71,11 +75,27 @@ const onDrop = useCallback((acceptedFiles) => {
 
   useEffect(() => {
     const getExpirationTime = async () => {
-      const res = await api.get('/expirationTime');
-      setExpirationTime(res.data);
+      try {
+        const res = await api.get('/expirationTime');
+        setExpirationTime(res.data);
+      } catch {
+        console.error('Failed to get expiration time');
+        toast.error('Failed to load expiration time');
+      }
     }
 
     getExpirationTime();
+
+    // Check for previous results
+    const saved = localStorage.getItem('photoResults');
+    if (saved) {
+      const { sessionId: savedId, expTime } = JSON.parse(saved);
+      if (Date.now() < expTime) {
+        setHasPrevious(true);
+      } else {
+        localStorage.removeItem('photoResults');
+      }
+    }
   }, [])
 
   useEffect(() => {
@@ -83,13 +103,17 @@ const onDrop = useCallback((acceptedFiles) => {
     if (sessionId && status === 'processing') {
       interval = setInterval(async () => {
         try {
-          const res = await api.get(`/api/progress/${sessionId}`);
+          const res = await api.get(`/progress/${sessionId}`);
+          console.log('Progress:', res.data);
           setProgress(res.data);
           if (res.data.processed === res.data.total) {
-            navigate(`/results/${sessionId}`);
+            const sessionRes = await api.get(`/session/${sessionId}`);
+            setProcessedFiles(sessionRes.data.files);
+            setStatus('completed');
+            toast.success('Processing complete!');
           }
         } catch (error) {
-          console.log(error);
+          console.error('Progress poll error:', error);
         }
       }, 1000);
     }
@@ -110,14 +134,12 @@ const onDrop = useCallback((acceptedFiles) => {
   return (
     <Grid container spacing={2} sx={{ maxWidth: 800, mx: "auto" }}>
       <Grid item xs={12}>
-        <Paper sx={{ textAlign: "center", p: 5 }}>
-          <Typography variant="h4" gutterBottom>
-            Photo Metadata Remover
-          </Typography>
-          <Typography variant="subtitle1" gutterBottom>
-            Upload up to 5 photos. Processed images available for {expirationTime} minutes.
-          </Typography>
-        </Paper>
+        <Typography variant="h4" align="center" gutterBottom sx={{ color: 'primary.main' }}>
+          📤 Upload Photos
+        </Typography>
+        <Typography variant="subtitle1" align="center" gutterBottom>
+          Upload up to 5 photos. Processed images available for {expirationTime} minutes.
+        </Typography>
       </Grid>
       <Grid item xs={12} sm={6}>
         <FormControl fullWidth>
@@ -158,11 +180,11 @@ const onDrop = useCallback((acceptedFiles) => {
           }}
         >
           <input {...getInputProps()} />
-          <CloudUploadIcon
+          <CloudUpload
             sx={{ fontSize: 48, color: "primary.main", mb: 2 }}
           />
           <Typography variant="h6" gutterBottom>
-            {isDragActive ? "Drop up to 5 images here ..." : "Drag & drop up to 5 images here, or click to select"}
+            {isDragActive ? "📂 Drop up to 5 images here ..." : "📂 Drag & drop up to 5 images here, or tap to select"}
           </Typography>
           <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
             Supported: JPEG, PNG, WebP (max 10MB each)
@@ -174,23 +196,25 @@ const onDrop = useCallback((acceptedFiles) => {
       </Grid>
       {files.length > 0 && (
         <Grid item xs={12}>
-      <Paper sx={{p:3}}>
-        <Typography variant="h6" gutterBottom>Selected Files ({files.length}/5)</Typography>
-            {files.map((f, i) => (
-              <Box key={i} display="flex" justifyContent="space-between" mb={1}>
-                <Typography>{f.name}</Typography>
-                <Typography variant="body2" color="text.secondary">
-                  {(f.size / 1024).toFixed(1)} KB
-                </Typography>
-              </Box>
-            ))}
+          <Paper sx={{p:3}}>
+            <Typography variant="h6" gutterBottom>📸 Selected Files ({files.length}/5)</Typography>
+            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+              {files.map((f, i) => (
+                <Chip
+                  key={i}
+                  avatar={<Avatar><PhotoCamera /></Avatar>}
+                  label={`${f.name} (${(f.size / 1024).toFixed(1)} KB)`}
+                  variant="outlined"
+                />
+              ))}
+            </Box>
           </Paper>
         </Grid>
       )}
       {status === "uploading" && (
         <Grid item xs={12}>
-      <Paper sx={{p:3}}>
-        <Typography variant="h6" gutterBottom>Upload Progress</Typography>
+          <Paper sx={{p:3}}>
+            <Typography variant="h6" gutterBottom>📤 Upload Progress</Typography>
             <LinearProgress variant="determinate" value={uploadProgress} />
             <Typography variant="body2">{uploadProgress.toFixed(0)}%</Typography>
           </Paper>
@@ -198,14 +222,56 @@ const onDrop = useCallback((acceptedFiles) => {
       )}
       {status === "processing" && (
         <Grid item xs={12}>
-      <Paper sx={{p:3}}>
-        <Typography variant="h6" gutterBottom>Processing Progress</Typography>
+          <Paper sx={{p:3}}>
+            <Typography variant="h6" gutterBottom>⏳ Processing Progress</Typography>
             <Typography>Processed: {progress.processed}/{progress.total}</Typography>
-            <LinearProgress 
-              variant="determinate" 
-              value={progress.total > 0 ? (progress.processed / progress.total * 100) : 0} 
+            <LinearProgress
+              variant="determinate"
+              value={progress.total > 0 ? (progress.processed / progress.total * 100) : 0}
             />
           </Paper>
+        </Grid>
+      )}
+      {status === "completed" && (
+        <Grid item xs={12}>
+          <Paper sx={{p:3}}>
+            <Typography variant="h5" gutterBottom sx={{color: 'primary.main'}}>✅ Processing Complete! Navigate to Results</Typography>
+            <Box mt={2}>
+              <Button variant="contained" color="primary" startIcon={<Visibility />} onClick={() => navigate(`/results/${sessionId}`)}>
+                View Results
+              </Button>
+            </Box>
+          </Paper>
+        </Grid>
+      )}
+      {status === "error" && (
+        <Grid item xs={12}>
+          <Paper sx={{p:3}}>
+            <Typography variant="h6" gutterBottom sx={{color: 'error.main'}}>❌ Error</Typography>
+            <Typography>Upload or processing failed. Please try again.</Typography>
+            <Box mt={2}>
+              <Button variant="contained" color="primary" onClick={() => setStatus("idle")}>
+                Try Again
+              </Button>
+            </Box>
+          </Paper>
+        </Grid>
+      )}
+      {hasPrevious && (
+        <Grid item xs={12}>
+          <Box sx={{ textAlign: 'center', mt: 2 }}>
+            <Button
+              variant="outlined"
+              color="secondary"
+              startIcon={<Visibility />}
+              onClick={() => {
+                const saved = JSON.parse(localStorage.getItem('photoResults'));
+                navigate(`/results/${saved.sessionId}`);
+              }}
+            >
+              🔄 View Previous Results
+            </Button>
+          </Box>
         </Grid>
       )}
     </Grid>

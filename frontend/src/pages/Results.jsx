@@ -9,23 +9,32 @@ const Results = () => {
   const { sessionId } = useParams();
   const [files, setFiles] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [expTime, setExpTime] = useState(0);
   const navigate = useNavigate();
 
   useEffect(() => {
     const poll = async () => {
       try {
-        const res = await api.get(`/api/session/${sessionId}`);
+        const res = await api.get(`/session/${sessionId}`);
         setFiles(res.data.files);
+        setExpTime(res.data.expTime);
         if (res.data.files.length > 0) setLoading(false);
-      } catch {
+      } catch (error) {
+        console.error('Session fetch error:', error);
         navigate('/');
       }
     };
 
     poll();
-    const int = setInterval(poll, 1000);
+    const int = setInterval(poll, 10000); // Poll every 10s to check expiration
     return () => clearInterval(int);
   }, [sessionId, navigate]);
+
+  useEffect(() => {
+    if (expTime > 0) {
+      localStorage.setItem('photoResults', JSON.stringify({ sessionId, expTime }));
+    }
+  }, [sessionId, expTime]);
 
   if (loading) {
     return (
@@ -38,23 +47,10 @@ const Results = () => {
 
   return (
     <Box sx={{ p: 4 }}>
-      <Typography variant="h4" gutterBottom>Processed Images ({files.length})</Typography>
-      <Typography variant="h5" gutterBottom sx={{mt:2}}>Temporary URLs (expire soon):</Typography>
-      <Box sx={{mb:4}}>
-        {files.map((file, i) => (
-          <Box key={i} sx={{mb:1, py:1, borderBottom: '1px solid grey.400'}}>
-            <a href={file.url} target="_blank" rel="noopener noreferrer" style={{marginRight:16}}>
-              {file.filename}
-            </a>
-            <Button size="small" onClick={() => navigator.clipboard.writeText(file.url || '').then(() => toast.success('Copied!'))}>
-              Copy
-            </Button>
-          </Box>
-        ))}
-      </Box>
+      <Typography variant="h4" gutterBottom sx={{color: 'primary.main'}}>✅ Processed Images ({files.length})</Typography>
       <Grid container spacing={2}>
         {files.map((file, i) => (
-          <Grid item xs={11} sm={12} md={6} lg={4} key={i}>
+          <Grid item xs={12} sm={6} md={4} lg={3} key={i}>
             <ImgMediaCard file={file} />
           </Grid>
         ))}
