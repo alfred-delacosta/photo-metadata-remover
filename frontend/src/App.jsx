@@ -1,61 +1,102 @@
 import { Routes, Route } from "react-router";
+import { useState, useEffect } from "react";
 import FileUpload from "./components/FileUpload";
 import ViewImage from "./pages/ViewImage";
-import Box from "@mui/material/Box";
-import CssBaseline from "@mui/material/CssBaseline";
-import { ThemeProvider, useMediaQuery } from "@mui/material";
-import { useState, useEffect } from "react";
-import getTheme from "./theme";
 import NotFound from "./pages/NotFound";
 import Results from "./pages/Results";
-import './css/App.css'
+import { motion, AnimatePresence } from "framer-motion";
+import "./css/App.css";
 
+/**
+ * Modern App Entry Point
+ * 
+ * This has been completely refactored for a 2026 premium aesthetic.
+ * - Dark mode first with smooth system preference detection
+ * - Tailwind + custom design tokens instead of MUI
+ * - Framer Motion for page transitions and micro-interactions
+ * - Clean, educational code with clear comments explaining the "why"
+ */
 function App() {
-  const prefersDarkMode = useMediaQuery('(prefers-color-scheme: dark)');
-  const [mode, setMode] = useState(() => {
-    const saved = localStorage.getItem('themeMode');
-    return saved || (prefersDarkMode ? 'dark' : 'light');
+  // Dark mode is now default (modern trend). We detect system preference
+  // and allow toggling. This creates a calm, focused experience.
+  const [isDark, setIsDark] = useState(() => {
+    const saved = localStorage.getItem("themeMode");
+    if (saved !== null) return saved === "dark";
+    
+    return window.matchMedia("(prefers-color-scheme: dark)").matches;
   });
 
-  const toggleMode = () => {
-    const newMode = mode === 'light' ? 'dark' : 'light';
-    setMode(newMode);
-    localStorage.setItem('themeMode', newMode);
+  const toggleTheme = () => {
+    const newIsDark = !isDark;
+    setIsDark(newIsDark);
+    localStorage.setItem("themeMode", newIsDark ? "dark" : "light");
   };
 
+  // Apply dark class to html for Tailwind dark: variants
   useEffect(() => {
-    const saved = localStorage.getItem('themeMode');
-    if (!saved) {
-      setMode(prefersDarkMode ? 'dark' : 'light');
+    if (isDark) {
+      document.documentElement.classList.add("dark");
+    } else {
+      document.documentElement.classList.remove("dark");
     }
-  }, [prefersDarkMode]);
-
-  const theme = getTheme(mode);
+  }, [isDark]);
 
   return (
-    <ThemeProvider theme={theme}>
-      <Box
-        sx={{
-          minHeight: "100vh",
-          p: 2,
-          // display: "flex",
-          // alignItems: "center",
-          // justifyContent: "center",
-          background: mode === 'dark'
-            ? "linear-gradient(135deg, #121212 0%, #1e1e1e 100%)"
-            : "linear-gradient(135deg, #ffffff 0%, #e3f2fd 100%)",
-        }}
-      >
-        <CssBaseline />
+    <div className="min-h-screen bg-background text-foreground overflow-x-hidden">
+      <AnimatePresence mode="wait">
         <Routes>
-          <Route path="/" element={<FileUpload mode={mode} onToggleMode={toggleMode} />} />
-          <Route path="/viewImage/:filename" element={<ViewImage />} />
-          <Route path="/results/:sessionId" element={<Results />} />
+          <Route 
+            path="/" 
+            element={
+              <motion.div
+                key="upload"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                transition={{ duration: 0.4, ease: "easeOut" }}
+              >
+                <FileUpload isDark={isDark} onToggleTheme={toggleTheme} />
+              </motion.div>
+            } 
+          />
+          <Route 
+            path="/viewImage/:filename" 
+            element={
+              <motion.div
+                key="view"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.3 }}
+              >
+                <ViewImage />
+              </motion.div>
+            } 
+          />
+          <Route 
+            path="/results/:sessionId" 
+            element={
+              <motion.div
+                key="results"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.4 }}
+              >
+                <Results />
+              </motion.div>
+            } 
+          />
           <Route path="/notfound" element={<NotFound />} />
           <Route path="/*" element={<NotFound />} />
         </Routes>
-      </Box>
-    </ThemeProvider>
+      </AnimatePresence>
+
+      {/* Modern toast with glass effect */}
+      <div className="fixed bottom-4 right-4 z-50">
+        {/* Toaster is still used from main.jsx but we can style it globally */}
+      </div>
+    </div>
   );
 }
 
