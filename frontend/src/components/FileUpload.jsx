@@ -179,11 +179,11 @@ const FileUpload = ({ isDark, onToggleTheme }) => {
       <div className="flex flex-col lg:flex-row gap-4 justify-center mb-12 max-w-2xl mx-auto">
         <div className="flex-1">
           <label className="block text-sm font-medium mb-2 text-foreground-secondary">Preset</label>
-          <div className="grid grid-cols-4 gap-1">
+          <div className="flex gap-1">
             {["low", "medium", "high", "orig"].map((p) => (
               <motion.button
                 key={p}
-                className={`p-3 rounded-lg border-2 transition-all duration-200 btn font-medium text-sm ${
+                className={`px-4 py-3 rounded-lg border-2 transition-all duration-200 btn font-medium text-sm whitespace-nowrap ${
                   preset === p
                     ? "bg-primary text-primary-foreground border-primary shadow-card"
                     : "border-border hover:border-primary/50 text-foreground-secondary hover:text-foreground"
@@ -199,11 +199,11 @@ const FileUpload = ({ isDark, onToggleTheme }) => {
         </div>
         <div className="flex-1">
           <label className="block text-sm font-medium mb-2 text-foreground-secondary">Format</label>
-          <div className="grid grid-cols-2 gap-1">
+          <div className="flex gap-1">
             {["jpeg", "webp"].map((f) => (
               <motion.button
                 key={f}
-                className={`p-3 rounded-lg border-2 transition-all duration-200 btn font-medium text-sm ${
+                className={`px-4 py-3 rounded-lg border-2 transition-all duration-200 btn font-medium text-sm whitespace-nowrap ${
                   format === f
                     ? "bg-primary text-primary-foreground border-primary shadow-card"
                     : "border-border hover:border-primary/50 text-foreground-secondary hover:text-foreground"
