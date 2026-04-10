@@ -46,10 +46,10 @@ html {
 
 /* Glassmorphic effect for modern cards and modals */
 .glass {
-  background: rgba(17, 17, 17, 0.85);
+  background: rgba(var(--background-paper), 0.85);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(39, 39, 42, 0.6);
+  border: 1px solid rgba(var(--border), 0.6);
 }
 
 /* Smooth focus states */
@@ -71,7 +71,7 @@ html {
 
 .btn:hover {
   transform: translateY(-1px);
-  box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.3);
+  box-shadow: 0 10px 15px -3px rgb(var(--foreground) / 0.1);
 }
 
 /* Staggered animation utility */
@@ -87,7 +87,7 @@ html {
 
 /* Shimmer loading effect */
 .shimmer {
-  background: linear-gradient(90deg, #1f2937 25%, #374151 50%, #1f2937 75%);
+  background: linear-gradient(90deg, rgb(var(--border)) 25%, rgb(var(--background-elevated)) 50%, rgb(var(--border)) 75%);
   background-size: 200% 100%;
   animation: shimmer 1.5s infinite;
 }

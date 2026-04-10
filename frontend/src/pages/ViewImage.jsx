@@ -172,8 +172,8 @@ const ViewImage = () => {
       <motion.button
         className="fixed top-1/2 left-4 -translate-y-1/2 p-3 bg-background-paper/90 backdrop-blur-sm rounded-2xl border hover:border-primary/50 z-50 shadow-card"
         onClick={() => setSidebarOpen(!sidebarOpen)}
-        whileHover={{ scale: 1.1 }}
-        whileTap={{ scale: 0.95 }}
+        whileHover={{ scale: 1.05, transformOrigin: "center" }}
+        whileTap={{ scale: 0.95, transformOrigin: "center" }}
         title="Toggle Details (ESC)"
       >
         <ChevronLeft className={`w-6 h-6 transition-transform ${sidebarOpen ? 'rotate-180' : ''}`} />

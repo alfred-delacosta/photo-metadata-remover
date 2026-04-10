@@ -1,12 +1,12 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { 
-  Eye, 
-  Settings, 
-  Share2, 
-  Download, 
+import {
+  Eye,
+  Settings,
+  Share2,
+  Download,
   Home,
-  AlertCircle 
+  AlertCircle
 } from "lucide-react";
 import toast from "react-hot-toast";
 import api from "../lib/axios";
@@ -45,13 +45,42 @@ export default function ImgMediaCard({ file, isResults = false, expTime }) {
   }, [token]);
 
   const copyLink = async () => {
+    const shareUrl = `${window.location.origin}/viewImage/${filename}?token=${token}`;
     try {
-      const shareUrl = `${window.location.origin}/viewImage/${filename}?token=${token}`;
-      await navigator.clipboard.writeText(shareUrl);
-      toast.success("Link copied!");
+      // Try modern clipboard API first
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        await navigator.clipboard.writeText(shareUrl);
+        toast.success("Link copied!");
+      } else {
+        // Fallback for older browsers or HTTP contexts
+        fallbackCopyTextToClipboard(shareUrl);
+      }
+    } catch {
+      // If clipboard fails, use fallback
+      fallbackCopyTextToClipboard(shareUrl);
+    }
+  };
+
+  const fallbackCopyTextToClipboard = (text) => {
+    const textArea = document.createElement("textarea");
+    textArea.value = text;
+    textArea.style.position = "fixed"; // Avoid scrolling to bottom
+    textArea.style.left = "-999999px";
+    textArea.style.top = "-999999px";
+    document.body.appendChild(textArea);
+    textArea.focus();
+    textArea.select();
+    try {
+      const successful = document.execCommand('copy');
+      if (successful) {
+        toast.success("Link copied!");
+      } else {
+        toast.error("Copy failed!");
+      }
     } catch {
       toast.error("Copy failed!");
     }
+    document.body.removeChild(textArea);
   };
 
   if (error) {
@@ -69,62 +98,51 @@ export default function ImgMediaCard({ file, isResults = false, expTime }) {
   }
 
   return (
-    <motion.article 
+    <motion.div
       className="group relative bg-background-paper rounded-3xl shadow-card hover:shadow-glass overflow-hidden h-full flex flex-col transition-all duration-500 border border-border/50"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       whileHover={{ y: -8 }}
       transition={{ duration: 0.3 }}
     >
-      {/* Image with hover overlay */}
-      <div className="relative aspect-[4/3] overflow-hidden">
-        <img 
-          src={imageLink}
-          alt={imageName}
-          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-        />
-        {/* Hover overlay */}
-        <motion.div 
-          className="absolute inset-0 bg-black/60 backdrop-blur-sm opacity-0 group-hover:opacity-100 flex items-center justify-center gap-4 p-4 transition-all duration-300"
-          initial={{ opacity: 0 }}
-          whileHover={{ opacity: 1 }}
-        >
-          <motion.button
-            onClick={() => window.open(`/viewImage/${filename}?token=${token}`, "_blank")}
-            className="p-3 bg-primary/90 backdrop-blur-sm rounded-2xl border text-primary-foreground hover:bg-primary"
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.95 }}
-          >
-            <Eye className="w-5 h-5" />
-          </motion.button>
-          {isResults && (
-            <>
+      {/* Image with Overlay */}
+      {imageLink && (
+        <div className="relative overflow-hidden rounded-t-3xl">
+          <img src={imageLink} alt={imageName} className="w-full h-48 object-cover" />
+          <div className="absolute inset-0 bg-black/50 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+            <div className="flex gap-2">
               <motion.button
-                onClick={() => window.open(`/viewImage/${filename}?token=${token}`, "_blank")}
-                className="p-3 bg-accent/90 backdrop-blur-sm rounded-2xl border text-accent-foreground hover:bg-accent"
+                onClick={() => window.open(`/viewImage/${filename}?token=${token}`, '_blank')}
+                className="p-2 bg-white/20 backdrop-blur-sm rounded-full text-white hover:bg-white/30 transition-colors"
                 whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.95 }}
+                whileTap={{ scale: 0.9 }}
+                title="View Image"
               >
-                <Settings className="w-5 h-5" />
+                <Eye className="w-5 h-5" />
               </motion.button>
               <motion.button
                 onClick={copyLink}
-                className="p-3 bg-foreground/90 backdrop-blur-sm rounded-2xl border text-background hover:bg-foreground"
+                className="p-2 bg-white/20 backdrop-blur-sm rounded-full text-white hover:bg-white/30 transition-colors"
                 whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.95 }}
+                whileTap={{ scale: 0.9 }}
+                title="Share Link"
               >
                 <Share2 className="w-5 h-5" />
               </motion.button>
-            </>
-          )}
-        </motion.div>
-      </div>
-
-      {/* Metadata - Slide up on hover */}
-      <motion.div 
-        className="p-6 flex-1 flex flex-col justify-between"
-        animate={{ y: isResults ? 0 : "auto" }}
-      >
+              <motion.button
+                onClick={() => window.location.href = `/viewImage/${filename}?token=${token}`}
+                className="p-2 bg-white/20 backdrop-blur-sm rounded-full text-white hover:bg-white/30 transition-colors"
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
+                title="Resize/Settings"
+              >
+                <Settings className="w-5 h-5" />
+              </motion.button>
+            </div>
+          </div>
+        </div>
+      )}
+      <div className="p-6 flex-1 flex flex-col justify-between">
         <div>
           <p className="text-foreground-secondary text-sm mb-1">{preset?.toUpperCase()} / {format?.toUpperCase()}</p>
           <p className="text-foreground font-medium truncate">{imageName}</p>
@@ -141,7 +159,6 @@ export default function ImgMediaCard({ file, isResults = false, expTime }) {
             )}
           </p>
         </div>
-
         {/* Action Buttons - Compact grid */}
         <div className="pt-4 mt-auto grid grid-cols-2 gap-2">
           <motion.a
@@ -163,8 +180,8 @@ export default function ImgMediaCard({ file, isResults = false, expTime }) {
             </motion.div>
           )}
         </div>
-      </motion.div>
 
+    </div>
       {/* Countdown if in results */}
       {isResults && expTime > Date.now() && (
         <motion.div 
@@ -183,6 +200,6 @@ export default function ImgMediaCard({ file, isResults = false, expTime }) {
           />
         </motion.div>
       )}
-    </motion.article>
-  );
+    </motion.div>
+    )
 }

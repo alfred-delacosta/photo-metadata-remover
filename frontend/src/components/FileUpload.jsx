@@ -1,15 +1,17 @@
 import { useState, useCallback, useEffect } from "react";
 import { useDropzone } from "react-dropzone";
-import { 
-  UploadCloud, 
-  Image as ImageIcon, 
-  Settings, 
-  Eye, 
-  Sun, 
-  Moon, 
-  Clock, 
-  Download, 
-  ArrowLeft 
+import {
+  UploadCloud,
+  Image as ImageIcon,
+  Settings,
+  Eye,
+  Sun,
+  Moon,
+  Clock,
+  Download,
+  ArrowLeft,
+  CheckCircle,
+  Loader
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import api from "../lib/axios";
@@ -34,6 +36,7 @@ import { Link } from "react-router";
  */
 const FileUpload = ({ isDark, onToggleTheme }) => {
   const [files, setFiles] = useState([]);
+  const [fileStatuses, setFileStatuses] = useState([]);
   const [status, setStatus] = useState("idle");
   const [uploadProgress, setUploadProgress] = useState(0);
   const [expirationTime, setExpirationTime] = useState(0);
@@ -52,6 +55,8 @@ const FileUpload = ({ isDark, onToggleTheme }) => {
 
     setStatus("uploading");
     setUploadProgress(0);
+    setFileStatuses(files.map(file => ({ name: file.name, status: 'uploading' })));
+    toast("Starting upload...", { duration: 2000 });
 
     const formData = new FormData();
     files.forEach((file) => formData.append("files", file));
@@ -83,11 +88,13 @@ const FileUpload = ({ isDark, onToggleTheme }) => {
         expTime: expTimeNum,
       }));
       setStatus("processing");
+      setFileStatuses(files.map(file => ({ name: file.name, status: 'processing' })));
       toast.success("Upload complete, processing...");
     } catch (error) {
       console.error("Upload error:", error);
       setStatus("error");
       setUploadProgress(0);
+      setFileStatuses(files.map(file => ({ name: file.name, status: 'error' })));
       toast.error("Upload Error!");
     }
   }, [preset, format]);
@@ -99,6 +106,7 @@ const FileUpload = ({ isDark, onToggleTheme }) => {
     }
     const limitedFiles = acceptedFiles.slice(0, 5);
     setFiles(limitedFiles);
+    setFileStatuses(limitedFiles.map(file => ({ name: file.name, status: 'selected' })));
     handleUpload(limitedFiles);
   }, [handleUpload]);
 
@@ -132,10 +140,16 @@ const FileUpload = ({ isDark, onToggleTheme }) => {
         try {
           const res = await api.get(`/progress/${sessionId}`);
           setProgress(res.data);
+          // Update file statuses based on processed count
+          setFileStatuses(prev => prev.map((f, index) => ({
+            ...f,
+            status: index < res.data.processed ? 'completed' : 'processing'
+          })));
           if (res.data.processed === res.data.total) {
             const sessionRes = await api.get(`/session/${sessionId}`);
             setProcessedFiles(sessionRes.data.files);
             setStatus("completed");
+            setFileStatuses(prev => prev.map(f => ({ ...f, status: 'completed' })));
             toast.success("Processing complete!");
           }
         } catch (error) {
@@ -303,29 +317,63 @@ const FileUpload = ({ isDark, onToggleTheme }) => {
             Selected Files ({files.length}/5)
           </h2>
           <div className="stagger grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
-            {files.map((f, i) => (
-              <motion.div
-                key={i}
-                className="group relative bg-background-paper p-4 rounded-2xl border border-border hover:border-primary hover:shadow-card transition-all duration-200 overflow-hidden"
-                whileHover={{ y: -4 }}
-              >
-                <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center mb-2">
-                  <ImageIcon className="w-6 h-6 text-primary" />
-                </div>
-                <p className="font-medium truncate">{f.name}</p>
-                <p className="text-foreground-secondary text-sm">
-                  {Math.round(f.size / 1024)} KB
-                </p>
-              </motion.div>
-            ))}
+            {files.map((f, i) => {
+              const fileStatus = fileStatuses.find(fs => fs.name === f.name)?.status || 'selected';
+              const getStatusIcon = () => {
+                switch (fileStatus) {
+                  case 'uploading':
+                    return <Loader className="w-6 h-6 text-primary animate-spin" />;
+                  case 'processing':
+                    return <Clock className="w-6 h-6 text-accent animate-spin" />;
+                  case 'completed':
+                    return <CheckCircle className="w-6 h-6 text-success" />;
+                  case 'error':
+                    return <ArrowLeft className="w-6 h-6 text-error rotate-180" />;
+                  default:
+                    return <ImageIcon className="w-6 h-6 text-primary" />;
+                }
+              };
+              const getStatusColor = () => {
+                switch (fileStatus) {
+                  case 'uploading':
+                    return 'border-primary/50 bg-primary/5';
+                  case 'processing':
+                    return 'border-accent/50 bg-accent/5';
+                  case 'completed':
+                    return 'border-success/50 bg-success/5';
+                  case 'error':
+                    return 'border-error/50 bg-error/5';
+                  default:
+                    return 'border-border hover:border-primary bg-background-paper';
+                }
+              };
+              return (
+                <motion.div
+                  key={i}
+                  className={`group relative p-4 rounded-2xl border hover:shadow-card transition-all duration-200 overflow-hidden ${getStatusColor()}`}
+                  whileHover={{ y: -4 }}
+                >
+                  <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center mb-2">
+                    {getStatusIcon()}
+                  </div>
+                  <p className="font-medium truncate">{f.name}</p>
+                  <p className="text-foreground-secondary text-sm">
+                    {Math.round(f.size / 1024)} KB
+                  </p>
+                  <p className="text-xs capitalize text-foreground-muted mt-1">
+                    {fileStatus}
+                  </p>
+                </motion.div>
+              );
+            })}
           </div>
         </motion.div>
       )}
 
       {/* Progress Indicators */}
       {status === "uploading" && (
-        <motion.div 
-          className="mt-12 max-w-md mx-auto glass p-8 rounded-3xl shadow-glass"
+        <motion.div
+          className="mt-12 max-w-md mx-auto glass p-6 sm:p-8 rounded-3xl shadow-glass"
           initial={{ scale: 0.95, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
         >
@@ -333,10 +381,13 @@ const FileUpload = ({ isDark, onToggleTheme }) => {
             <div className="w-10 h-10 bg-primary/20 rounded-xl flex items-center justify-center">
               <UploadCloud className="w-5 h-5 text-primary animate-pulse" />
             </div>
-            <h3 className="text-xl font-bold text-foreground">Upload Progress</h3>
+            <h3 className="text-xl font-bold text-foreground">Uploading Files</h3>
           </div>
+          <p className="text-sm text-foreground-secondary mb-4 text-center">
+            Uploading {files.length} image{files.length !== 1 ? 's' : ''}...
+          </p>
           <div className="w-full bg-border rounded-full h-3 mb-2 overflow-hidden">
-            <motion.div 
+            <motion.div
               className="bg-gradient-to-r from-primary to-accent h-3 rounded-full shimmer"
               initial={{ width: 0 }}
               animate={{ width: `${uploadProgress}%` }}
@@ -348,8 +399,8 @@ const FileUpload = ({ isDark, onToggleTheme }) => {
       )}
 
       {status === "processing" && (
-        <motion.div 
-          className="mt-12 max-w-md mx-auto glass p-8 rounded-3xl shadow-glass"
+        <motion.div
+          className="mt-12 max-w-md mx-auto glass p-6 sm:p-8 rounded-3xl shadow-glass"
           initial={{ scale: 0.95, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
         >
@@ -357,11 +408,14 @@ const FileUpload = ({ isDark, onToggleTheme }) => {
             <div className="w-10 h-10 bg-accent/20 rounded-xl flex items-center justify-center animate-spin">
               <Clock className="w-5 h-5 text-accent" />
             </div>
-            <h3 className="text-xl font-bold text-foreground">Processing</h3>
+            <h3 className="text-xl font-bold text-foreground">Processing Images</h3>
           </div>
-          <p className="text-lg mb-4 text-center">{progress.processed}/{progress.total}</p>
+          <p className="text-sm text-foreground-secondary mb-4 text-center">
+            Removing metadata from {progress.total} image{progress.total !== 1 ? 's' : ''}...
+          </p>
+          <p className="text-lg mb-4 text-center">{progress.processed}/{progress.total} completed</p>
           <div className="w-full bg-border rounded-full h-3 mb-2 overflow-hidden">
-            <motion.div 
+            <motion.div
               className="bg-accent h-3 rounded-full shimmer"
               animate={{ width: progress.total > 0 ? `${(progress.processed / progress.total) * 100}%` : 0 }}
               transition={{ duration: 0.8 }}
@@ -370,27 +424,36 @@ const FileUpload = ({ isDark, onToggleTheme }) => {
         </motion.div>
       )}
 
-      {status === "completed" && (
-        <motion.div 
-          className="mt-12 max-w-md mx-auto glass p-8 rounded-3xl shadow-glass text-center"
-          initial={{ scale: 0.95, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-        >
-          <div className="w-20 h-20 bg-success/20 rounded-2xl flex items-center justify-center mx-auto mb-6">
-            <Download className="w-10 h-10 text-success" />
-          </div>
-          <h3 className="text-2xl font-bold text-success mb-6">Processing Complete!</h3>
-          <motion.button
-            className="btn w-full bg-primary text-primary-foreground py-4 px-8 rounded-2xl text-lg font-semibold shadow-card hover:shadow-glass"
-            onClick={() => navigate(`/results/${sessionId}`)}
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-          >
-            <Eye className="w-5 h-5 inline mr-2" />
-            View Results
-          </motion.button>
-        </motion.div>
-      )}
+        {status === "completed" && (
+          <>
+            {/* Completion message */}
+            <motion.div
+              ref={(el) => {
+                if (el && status === "completed") {
+                  el.scrollIntoView({ behavior: "smooth", block: "center" });
+                }
+              }}
+              className="max-w-md mx-auto glass p-8 rounded-3xl shadow-glass text-center"
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+            >
+              <div className="w-20 h-20 bg-success/20 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                <Download className="w-10 h-10 text-success" />
+              </div>
+              <h3 className="text-2xl font-bold text-success mb-4">Processing Complete!</h3>
+              <p className="text-foreground-secondary mb-8">Navigate to Results</p>
+              <motion.button
+                className="btn flex items-center justify-center gap-2 p-4 bg-primary text-primary-foreground rounded-2xl text-lg font-semibold shadow-card hover:shadow-glass"
+                onClick={() => navigate(`/results/${sessionId}`)}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+              >
+                <Eye className="w-5 h-5" />
+                View Results
+              </motion.button>
+            </motion.div>
+          </>
+        )}
 
       {status === "error" && (
         <motion.div 

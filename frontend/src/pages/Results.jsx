@@ -110,7 +110,7 @@ const Results = () => {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
       >
-        <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold bg-gradient-to-r from-primary via-accent to-success bg-clip-text text-transparent mb-4">
+        <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold bg-gradient-to-r from-primary via-accent to-success bg-clip-text text-transparent mb-4 leading-none pb-2">
           Processed Images
         </h1>
         <p className="text-2xl md:text-3xl text-foreground-secondary">
@@ -119,11 +119,12 @@ const Results = () => {
       </motion.div>
 
       {/* Masonry Gallery */}
-      <div className="columns-1 sm:columns-2 lg:columns-3 xl:columns-4 gap-6 max-w-7xl mx-auto mb-20">
+      <div className="columns-1 sm:columns-2 lg:columns-3 xl:columns-4 gap-10 max-w-7xl mx-auto mb-20 px-4">
         <AnimatePresence>
           {files.map((file, i) => (
             <motion.div
               key={`${file.filename}-${i}`}
+              className="mb-10"
               initial={{ opacity: 0, y: 50 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0 }}

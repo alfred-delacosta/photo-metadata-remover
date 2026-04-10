@@ -283,7 +283,9 @@ app.get('/api/image/:filename', async (req, res) => {
   res.sendFile(path.resolve(fileInfo.filePath), err => {
     if (err) {
       console.error('File serving error:', err);
-      res.status(404).json({ error: 'File not found' });
+      if (!res.headersSent) {
+        res.status(404).json({ error: 'File not found' });
+      }
     }
   });
 });
