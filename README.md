@@ -1,24 +1,27 @@
 # 🖼️ Photo Metadata Remover
 
-Welcome to the **Photo Metadata Remover**, a powerful web application designed to strip metadata from images effortlessly using **ImageMagick**. Built with **Node.js**, **Express.js**, **React.js**, and **Material UI**, this app combines performance with a modern, user-friendly interface. 🚀 It also includes an automatic cleanup feature to delete processed images from the server after a set time for enhanced security. 🕒
+Welcome to the **Photo Metadata Remover**, a powerful web application designed to strip metadata from images, resize/compress, and support HEIC/JPG/PNG. Built with **Node.js**, **Express.js**, **React.js**, **Sharp**, and **Material UI**, this app combines performance with a modern, user-friendly interface. 🚀 It includes multi-upload, progress tracking, and automatic cleanup for enhanced security. 🕒
 
 🔗 👉🏻 https://pmr.ajscreation.com 
 
 ## ✨ Features
 
-- **Metadata Removal**: Strip EXIF, IPTC, and other metadata from images with ease using ImageMagick. 🧹
-- **Automatic File Cleanup**: Processed images are automatically deleted from the server after a set time to ensure privacy and save space. 🕒
-- **Fast & Secure**: Processes images server-side with Node.js and Express.js for quick and secure operations. 🔒
-- **Intuitive UI**: Built with React.js and Material UI for a responsive, polished user experience. 🎨
-- **Drag-and-Drop Support**: Upload images seamlessly with a drag-and-drop interface. 📤
-- **Cross-Platform**: Works on any modern browser, desktop, or mobile. 🌐
+- **Metadata Removal & Compression**: Strip EXIF, IPTC, and other metadata, resize/compress with presets using Sharp. 🧹
+- **Multi-Upload**: Upload up to 5 images at once. 📤
+- **Presets & Formats**: Choose Low/Medium/High/Original presets (1920x1080 default), JPEG/WebP formats. 🎨
+- **Progress Tracking**: Real-time processing bars per batch. 📊
+- **Results Page**: Grid thumbnails + temp URLs list with copy. 📋
+- **Re-Resize**: View page allows re-processing with new options. 🔄
+- **Automatic File Cleanup**: Processed images auto-deleted after expiration. 🕒
+- **Responsive UI**: Mobile-friendly Material UI. 📱
+- **Fast & Secure**: Server-side processing with Sharp for quick operations. 🔒
+- **HEIC Support**: Handles HEIC inputs (libheif dep on VPS). 📸
 
 ## 🛠️ Tech Stack
 
-- **Backend**: Node.js, Express.js
-- **Frontend**: React.js, Material UI
-- **Image Processing**: ImageMagick
-- **Other Tools**: Multer (for file uploads), Axios (for API calls)
+- **Backend**: Node.js, Express.js, Sharp, Multer
+- **Frontend**: React.js, Vite, Material UI, Axios, Dropzone
+- **Image Processing**: Sharp (libvips)
 
 ## 🚀 Getting Started
 
@@ -26,86 +29,82 @@ Follow these steps to set up and run the Photo Metadata Remover locally.
 
 ### Prerequisites
 
-- **Node.js** (v16 or higher) 🟢
-- **ImageMagick** installed on your system (`magick` command must be available) 🖌️
-- A modern web browser 🌐
+- **Node.js** (v18 or higher) 🟢
+- Modern web browser 🌐
+- For HEIC: On VPS/Linux `apt install libheif1`; Windows/Mac handled by Sharp prebuilds.
 
 ### Installation
 
 1. **Clone the Repository**:
-   ```bash
-   git clone https://github.com/your-username/image-metadata-stripper.git
-   cd photo-metadata-remover
-   ```
+    ```bash
+    git clone <repo>
+    cd photo-metadata-remover
+    ```
 
 2. **Install Dependencies**:
-   ```bash
-   npm build
-   ```
+    ```bash
+    npm install  # installs root, backend, frontend deps
+    npm run build  # build frontend
+    ```
 
-3. **Install ImageMagick**:
-   - On macOS: `brew install imagemagick`
-   - On Ubuntu: `sudo apt-get install imagemagick`
-   - On Windows: Download and install from [ImageMagick's website](https://imagemagick.org/script/download.php).
+3. **Configure Environment Variables**:
+    - Copy `backend/.env-sample` to `backend/.env`:
+      ```bash
+      cp backend/.env-sample backend/.env
+      ```
+    - Fill in:
+      ```env
+      PORT=5000
+      ENVIRONMENT=development
+      LINK_EXPIRATION_MINUTES=60
+      OS=win32  # or linux
+      ```
 
-4. **Configure Environment Variables**:
-   - Copy the `.env-sample` file to `.env`:
-     ```bash
-     cp .env-sample .env
-     ```
-   - Open `.env` and fill in the required variables (e.g., `PORT` for the server port).
-   - Example `.env` content:
-     ```env
-     PORT=5000
-     ```
-
-5. **Start the Backend**:
-   ```bash
-   cd backend
-   npm start
-   ```
-   The Express server will run on the port specified in the `.env` file (e.g., `http://localhost:5000`).
-
-6. **Start the Frontend**:
-   In a new terminal:
-   ```bash
-   cd frontend
-   npm start
-   ```
-   The React app will run on `http://localhost:3000`.
+4. **Start the App**:
+    ```bash
+    npm run start  # root: starts backend (serves frontend in prod)
+    ```
+    Or dev:
+    ```bash
+    # Terminal 1: cd backend; npm run dev
+    # Terminal 2: cd frontend; npm run dev
+    ```
 
 ### Usage
 
-1. Open your browser and navigate to `http://localhost:3000`. 🌍
-2. Drag and drop an image or click to upload. 📸
-3. Click the "Strip Metadata" button to process the image. 🧹
-4. Download the metadata-free image. 📥 The processed image will be automatically deleted from the server after a set time. 🕒
+1. Open `http://localhost:5000` (dev: frontend separate). 🌍
+2. Select preset/format, drag/drop up to 5 images. 📸
+3. See upload/progress bars. 📊
+4. View results grid + temp URLs list. 📋
+5. Click thumbnail for new tab view + re-resize. 🔄
+6. Images auto-delete after expiration. 🕒
 
 ## 📂 Project Structure
 
 ```plaintext
 photo-metadata-remover/
-├── frontend/                  # React.js frontend
+├── frontend/                  # React/Vite frontend
 │   ├── src/
-│   │   ├── components/        # Reusable React components
-│   │   ├── App.js             # Main React app
-│   │   └── index.js           # Entry point
-├── backend/                   # Node.js/Express.js backend
-│   ├── routes/                # API routes
-│   ├── middleware/            # Multer for file uploads
-│   └── app.js                 # Main server file
-├── .env-sample                # Template for environment variables
-├── package.json               # Project dependencies
-└── README.md                  # You're here! 📖
+│   │   ├── components/        # FileUpload, ImgMediaCard
+│   │   ├── pages/             # Results, ViewImage
+│   │   ├── App.jsx            # Routes
+│   │   └── lib/               # Axios
+├── backend/                   # Node.js/Express backend
+│   ├── src/
+│   │   ├── app.js             # Main server
+│   │   └── utils/             # fileUtils.js
+│   └── package.json
+├── README.md                  # You're here! 📖
+└── package.json               # Root scripts
 ```
 
 ## 🎨 Customization
 
-- **Cleanup Timer**: Configure the automatic deletion timer by changing the value of the `LINK_EXPIRATION_MINUTES` in the .env file to adjust how long processed images are retained. 🕒
+- **Presets**: Edit `backend/src/app.js` presets object.
+- **Expiration**: Change `LINK_EXPIRATION_MINUTES` in `.env`.
+- **Max Files**: Update `maxCount: 5` in multer.
 
 ## 🤝 Contributing
-
-We welcome contributions! 🙌 Follow these steps:
 
 1. Fork the repository.
 2. Create a feature branch: `git checkout -b feature-name`.
@@ -115,13 +114,13 @@ We welcome contributions! 🙌 Follow these steps:
 
 ## 📜 License
 
-This project is licensed under the MIT License. See the [LICENSE](GPL-3.0) file for details. 📄
+ISC.
 
 ## 🙏 Acknowledgments
 
-- [ImageMagick](https://imagemagick.org/) for powerful image processing.
-- [Material UI](https://mui.com/) for beautiful components.
-- [React](https://reactjs.org/) and [Express](https://expressjs.com/) for robust frameworks.
+- [Sharp](https://sharp.pixelplumbing.com/) for image processing.
+- [Material UI](https://mui.com/) for components.
+- [React](https://reactjs.org/) and [Express](https://expressjs.com/) for frameworks.
 
 ---
 

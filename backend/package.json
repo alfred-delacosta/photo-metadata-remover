@@ -16,6 +16,7 @@
     "express": "^5.1.0",
     "multer": "^2.0.2",
     "photo-metadata-remover": "file:..",
+    "sharp": "^0.34.5",
     "unique-filename": "^4.0.0",
     "uuid": "^11.1.0"
   }
