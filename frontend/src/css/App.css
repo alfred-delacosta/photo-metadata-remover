@@ -96,3 +96,55 @@ html {
   0% { background-position: 200% 0; }
   100% { background-position: -200% 0; }
 }
+
+/* Respect user preference for reduced motion - premium but accessible */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .stagger > * {
+    opacity: 1;
+    animation: none !important;
+  }
+
+  .shimmer {
+    background: rgb(var(--border));
+    animation: none !important;
+  }
+
+  .btn:hover {
+    transform: none;
+    box-shadow: 0 4px 6px -1px rgb(var(--foreground) / 0.1);
+  }
+
+  .glass,
+  .shadow-card,
+  .shadow-glass {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+}
+
+/* Strong visible focus for keyboard users (premium but accessible) */
+button:focus-visible,
+.btn:focus-visible,
+a:focus-visible,
+[role="button"]:focus-visible,
+[role="radio"]:focus-visible {
+  outline: 2px solid rgb(var(--primary));
+  outline-offset: 2px;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+}
+
+/* Ensure focus-ring utility is robust */
+.focus-ring:focus-visible {
+  outline: 2px solid rgb(var(--primary));
+  outline-offset: 2px;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+}

@@ -1,6 +1,14 @@
 {
     "name": "Photo Metadata Remover",
     "short_name": "PMR",
+    "description": "Remove EXIF metadata, resize and compress images. Fast, private, up to 5 photos at once.",
+    "start_url": "/",
+    "scope": "/",
+    "display": "standalone",
+    "orientation": "any",
+    "background_color": "#0a0a0a",
+    "theme_color": "#0a0a0a",
+    "categories": ["photo", "privacy", "utilities"],
     "icons": [
         {
             "src": "/android-chrome-192x192.png",
@@ -13,7 +21,12 @@
             "type": "image/png"
         }
     ],
-    "theme_color": "#ffffff",
-    "background_color": "#ffffff",
-    "display": "standalone"
+    "shortcuts": [
+        {
+            "name": "Upload Photos",
+            "short_name": "Upload",
+            "url": "/",
+            "description": "Start a new metadata removal session"
+        }
+    ]
 }

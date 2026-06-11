@@ -1,5 +1,6 @@
-import { useState, useEffect } from "react";
-import { motion } from "framer-motion";
+import { useState } from "react";
+// eslint-disable-next-line no-unused-vars
+import { motion } from "framer-motion"; // used in JSX only
 import {
   Eye,
   Settings,
@@ -9,7 +10,6 @@ import {
   AlertCircle
 } from "lucide-react";
 import toast from "react-hot-toast";
-import api from "../lib/axios";
 import Countdown from "react-countdown";
 import { Link } from "react-router";
 
@@ -30,19 +30,7 @@ export default function ImgMediaCard({ file, isResults = false, expTime }) {
   const { url, origSize, newSize, preset, format, origName, filename, token, error } = file || {};
   const imageLink = url || '';
   const imageName = origName || filename;
-  const [linkCountdown, setLinkCountdown] = useState(0);
-
-  useEffect(() => {
-    const fetchCountdown = async () => {
-      try {
-        const res = await api.get(`/countdown?token=${token}`);
-        setLinkCountdown(res.data);
-      } catch {
-        toast.error('Failed to load countdown');
-      }
-    };
-    if (token) fetchCountdown();
-  }, [token]);
+  const [showActions, setShowActions] = useState(false);
 
   const copyLink = async () => {
     const shareUrl = `${window.location.origin}/viewImage/${filename}?token=${token}`;
@@ -105,36 +93,46 @@ export default function ImgMediaCard({ file, isResults = false, expTime }) {
       whileHover={{ y: -8 }}
       transition={{ duration: 0.3 }}
     >
-      {/* Image with Overlay */}
+      {/* Image with Overlay (hover on desktop, tap-to-toggle on touch) */}
       {imageLink && (
-        <div className="relative overflow-hidden rounded-t-3xl">
+        <div
+          className="relative overflow-hidden rounded-t-3xl cursor-pointer select-none"
+          onClick={() => setShowActions(!showActions)}
+          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setShowActions(!showActions); } }}
+          role="button"
+          tabIndex={0}
+          aria-label="Toggle quick actions"
+        >
           <img src={imageLink} alt={imageName} className="w-full h-48 object-cover" />
-          <div className="absolute inset-0 bg-black/50 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+          <div className={`absolute inset-0 bg-black/50 transition-opacity duration-300 flex items-center justify-center ${showActions ? 'opacity-100' : 'opacity-0 md:opacity-0 md:group-hover:opacity-100'}`}>
             <div className="flex gap-2">
               <motion.button
-                onClick={() => window.open(`/viewImage/${filename}?token=${token}`, '_blank')}
-                className="p-2 bg-white/20 backdrop-blur-sm rounded-full text-white hover:bg-white/30 transition-colors"
+                onClick={(e) => { e.stopPropagation(); window.open(`/viewImage/${filename}?token=${token}`, '_blank'); }}
+                className="p-2.5 min-w-[44px] min-h-[44px] bg-white/20 backdrop-blur-sm rounded-full text-white hover:bg-white/30 transition-colors"
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.9 }}
                 title="View Image"
+                aria-label="View image"
               >
                 <Eye className="w-5 h-5" />
               </motion.button>
               <motion.button
-                onClick={copyLink}
-                className="p-2 bg-white/20 backdrop-blur-sm rounded-full text-white hover:bg-white/30 transition-colors"
+                onClick={(e) => { e.stopPropagation(); copyLink(); }}
+                className="p-2.5 min-w-[44px] min-h-[44px] bg-white/20 backdrop-blur-sm rounded-full text-white hover:bg-white/30 transition-colors"
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.9 }}
                 title="Share Link"
+                aria-label="Copy share link"
               >
                 <Share2 className="w-5 h-5" />
               </motion.button>
               <motion.button
-                onClick={() => window.location.href = `/viewImage/${filename}?token=${token}`}
-                className="p-2 bg-white/20 backdrop-blur-sm rounded-full text-white hover:bg-white/30 transition-colors"
+                onClick={(e) => { e.stopPropagation(); window.location.href = `/viewImage/${filename}?token=${token}`; }}
+                className="p-2.5 min-w-[44px] min-h-[44px] bg-white/20 backdrop-blur-sm rounded-full text-white hover:bg-white/30 transition-colors"
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.9 }}
                 title="Resize/Settings"
+                aria-label="Reprocess settings"
               >
                 <Settings className="w-5 h-5" />
               </motion.button>
@@ -145,7 +143,7 @@ export default function ImgMediaCard({ file, isResults = false, expTime }) {
       <div className="p-6 flex-1 flex flex-col justify-between">
         <div>
           <p className="text-foreground-secondary text-sm mb-1">{preset?.toUpperCase()} / {format?.toUpperCase()}</p>
-          <p className="text-foreground font-medium truncate">{imageName}</p>
+          <p className="text-foreground font-medium truncate" title={imageName}>{imageName}</p>
           <p className="text-sm text-foreground-secondary">
             Original: {Math.round(origSize / 1024)} KB
             {newSize && (

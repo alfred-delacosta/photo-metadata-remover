@@ -13,7 +13,8 @@ import {
   CheckCircle,
   Loader
 } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+// eslint-disable-next-line no-unused-vars
+import { motion, AnimatePresence } from "framer-motion"; // JSX usage only
 import api from "../lib/axios";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router";
@@ -45,9 +46,12 @@ const FileUpload = ({ isDark, onToggleTheme }) => {
   const [format, setFormat] = useState("jpeg");
   const [sessionId, setSessionId] = useState(null);
   const [progress, setProgress] = useState({ processed: 0, total: 0 });
-  const [processedFiles, setProcessedFiles] = useState([]);
   const [hasPrevious, setHasPrevious] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
+  const [dropError, setDropError] = useState(null);
+
+  // Derived total size for selected files preview (max 5 files, cheap to compute)
+  const totalSelectedSize = files.reduce((sum, f) => sum + (f.size || 0), 0);
 
   // All existing logic remains unchanged for functionality
   const handleUpload = useCallback(async (files) => {
@@ -100,8 +104,11 @@ const FileUpload = ({ isDark, onToggleTheme }) => {
   }, [preset, format]);
 
   const onDrop = useCallback((acceptedFiles) => {
+    setDropError(null);
     if (acceptedFiles.length > 5) {
-      toast.error("Only 5 images allowed.");
+      const msg = "Only 5 images allowed.";
+      setDropError(msg);
+      toast.error(msg);
       return;
     }
     const limitedFiles = acceptedFiles.slice(0, 5);
@@ -146,8 +153,6 @@ const FileUpload = ({ isDark, onToggleTheme }) => {
             status: index < res.data.processed ? 'completed' : 'processing'
           })));
           if (res.data.processed === res.data.total) {
-            const sessionRes = await api.get(`/session/${sessionId}`);
-            setProcessedFiles(sessionRes.data.files);
             setStatus("completed");
             setFileStatuses(prev => prev.map(f => ({ ...f, status: 'completed' })));
             toast.success("Processing complete!");
@@ -164,7 +169,11 @@ const FileUpload = ({ isDark, onToggleTheme }) => {
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
-    onDropRejected: () => toast.error("Only 5 images allowed."),
+    onDropRejected: () => {
+      const msg = "Only 5 images allowed.";
+      setDropError(msg);
+      toast.error(msg);
+    },
     multiple: true,
     maxFiles: 5,
     accept: { "image/*": [] },
@@ -189,46 +198,56 @@ const FileUpload = ({ isDark, onToggleTheme }) => {
         </p>
       </motion.div>
 
-      {/* Controls - Segmented modern toggles */}
+      {/* Controls - Segmented modern toggles (accessible radiogroup) */}
       <div className="flex flex-col lg:flex-row gap-4 justify-center mb-12 max-w-2xl mx-auto">
         <div className="flex-1">
-          <label className="block text-sm font-medium mb-2 text-foreground-secondary">Preset</label>
-          <div className="flex gap-1">
-            {["low", "medium", "high", "orig"].map((p) => (
-              <motion.button
-                key={p}
-                className={`px-4 py-3 rounded-lg border-2 transition-all duration-200 btn font-medium text-sm whitespace-nowrap ${
-                  preset === p
-                    ? "bg-primary text-primary-foreground border-primary shadow-card"
-                    : "border-border hover:border-primary/50 text-foreground-secondary hover:text-foreground"
-                }`}
-                onClick={() => setPreset(p)}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                {p.charAt(0).toUpperCase() + p.slice(1)}
-              </motion.button>
-            ))}
+          <div role="radiogroup" aria-label="Preset" className="flex gap-1">
+            {["low", "medium", "high", "orig"].map((p) => {
+              const isActive = preset === p;
+              return (
+                <motion.button
+                  key={p}
+                  role="radio"
+                  aria-checked={isActive}
+                  aria-label={`Preset ${p.charAt(0).toUpperCase() + p.slice(1)}`}
+                  className={`px-4 py-3 rounded-lg border-2 transition-all duration-200 btn font-medium text-sm whitespace-nowrap ${
+                    isActive
+                      ? "bg-primary text-primary-foreground border-primary shadow-card"
+                      : "border-border hover:border-primary/50 text-foreground-secondary hover:text-foreground"
+                  }`}
+                  onClick={() => setPreset(p)}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  {p.charAt(0).toUpperCase() + p.slice(1)}
+                </motion.button>
+              );
+            })}
           </div>
         </div>
         <div className="flex-1">
-          <label className="block text-sm font-medium mb-2 text-foreground-secondary">Format</label>
-          <div className="flex gap-1">
-            {["jpeg", "webp"].map((f) => (
-              <motion.button
-                key={f}
-                className={`px-4 py-3 rounded-lg border-2 transition-all duration-200 btn font-medium text-sm whitespace-nowrap ${
-                  format === f
-                    ? "bg-primary text-primary-foreground border-primary shadow-card"
-                    : "border-border hover:border-primary/50 text-foreground-secondary hover:text-foreground"
-                }`}
-                onClick={() => setFormat(f)}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                {f.toUpperCase()}
-              </motion.button>
-            ))}
+          <div role="radiogroup" aria-label="Format" className="flex gap-1">
+            {["jpeg", "webp"].map((f) => {
+              const isActive = format === f;
+              return (
+                <motion.button
+                  key={f}
+                  role="radio"
+                  aria-checked={isActive}
+                  aria-label={`Format ${f.toUpperCase()}`}
+                  className={`px-4 py-3 rounded-lg border-2 transition-all duration-200 btn font-medium text-sm whitespace-nowrap ${
+                    isActive
+                      ? "bg-primary text-primary-foreground border-primary shadow-card"
+                      : "border-border hover:border-primary/50 text-foreground-secondary hover:text-foreground"
+                  }`}
+                  onClick={() => setFormat(f)}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  {f.toUpperCase()}
+                </motion.button>
+              );
+            })}
           </div>
         </div>
       </div>
@@ -283,6 +302,15 @@ const FileUpload = ({ isDark, onToggleTheme }) => {
         </AnimatePresence>
       </motion.div>
 
+      {/* Inline drop error for visibility (beyond toast) */}
+      {dropError && (
+        <div className="mt-4 max-w-md mx-auto text-center">
+          <p className="text-sm text-error bg-error/10 border border-error/30 rounded-xl px-4 py-2 inline-block">
+            {dropError}
+          </p>
+        </div>
+      )}
+
       {/* Previous Results Button */}
       {hasPrevious && (
         <motion.div
@@ -315,6 +343,9 @@ const FileUpload = ({ isDark, onToggleTheme }) => {
         >
           <h2 className="text-2xl font-bold text-foreground mb-6 text-center">
             Selected Files ({files.length}/5)
+            <span className="ml-2 text-base font-normal text-foreground-secondary">
+              ({(totalSelectedSize / 1024).toFixed(0)} KB total)
+            </span>
           </h2>
           <div className="stagger grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
             {files.map((f, i) => {
@@ -477,15 +508,15 @@ const FileUpload = ({ isDark, onToggleTheme }) => {
         </motion.div>
       )}
 
-      {/* Theme Toggle - Floating top-right */}
+      {/* Theme Toggle - Safe on mobile (top-right, smaller on xs) */}
       <motion.button
-        className="fixed top-6 right-6 p-3 bg-background-paper/80 backdrop-blur-sm rounded-2xl border border-border hover:border-primary/50 transition-all duration-200 z-50"
+        className="fixed top-4 right-4 sm:top-6 sm:right-6 p-2.5 sm:p-3 bg-background-paper/80 backdrop-blur-sm rounded-2xl border border-border hover:border-primary/50 transition-all duration-200 z-50"
         onClick={onToggleTheme}
         whileHover={{ scale: 1.1 }}
         whileTap={{ scale: 0.95 }}
         aria-label="Toggle theme"
       >
-        {isDark ? <Sun className="w-6 h-6 text-accent" /> : <Moon className="w-6 h-6 text-primary" />}
+        {isDark ? <Sun className="w-5 h-5 sm:w-6 sm:h-6 text-accent" /> : <Moon className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />}
       </motion.button>
 
       {/* Footer */}

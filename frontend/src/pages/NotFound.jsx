@@ -1,7 +1,8 @@
 import NotFoundSvg from "../Assets/404.svg?react";
 import { Link } from "react-router";
 import { Home } from "lucide-react";
-import { motion } from "framer-motion";
+// eslint-disable-next-line no-unused-vars
+import { motion } from "framer-motion"; // JSX only
 
 /**
  * Modern NotFound Page - Clean 404 with Illustration

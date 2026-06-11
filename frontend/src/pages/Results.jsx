@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from "react-router";
-import { motion, AnimatePresence } from "framer-motion";
-import { Home, Loader2 } from "lucide-react";
+// eslint-disable-next-line no-unused-vars
+import { motion, AnimatePresence } from "framer-motion"; // JSX only
+import { Home, Loader2, Copy } from "lucide-react";
 import ImgMediaCard from "../components/ImgMediaCard";
 import api from "../lib/axios";
+import toast from "react-hot-toast";
 
 /**
  * Modern Results Page - Masonry Gallery with Staggered Animation
@@ -49,6 +51,36 @@ const Results = () => {
       localStorage.setItem('photoResults', JSON.stringify({ sessionId, expTime }));
     }
   }, [sessionId, expTime]);
+
+  const copyAllLinks = async () => {
+    if (!files || files.length === 0) return;
+    const lines = files
+      .filter(f => !f.error && f.filename && f.token)
+      .map(f => `${window.location.origin}/viewImage/${f.filename}?token=${f.token}`);
+    if (lines.length === 0) {
+      toast.error("No links available to copy");
+      return;
+    }
+    const text = lines.join('\n');
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        await navigator.clipboard.writeText(text);
+      } else {
+        const ta = document.createElement('textarea');
+        ta.value = text;
+        ta.style.position = 'fixed';
+        ta.style.left = '-9999px';
+        document.body.appendChild(ta);
+        ta.focus();
+        ta.select();
+        document.execCommand('copy');
+        document.body.removeChild(ta);
+      }
+      toast.success(`${lines.length} link${lines.length > 1 ? 's' : ''} copied!`);
+    } catch {
+      toast.error('Failed to copy links');
+    }
+  };
 
   // Skeleton Loader Component
   const SkeletonCard = () => (
@@ -101,6 +133,20 @@ const Results = () => {
     );
   }
 
+  // Empty results state (defensive - if poll returned 0 files without error)
+  if (!loading && !error && files.length === 0) {
+    return (
+      <div className="min-h-screen py-20 px-4 flex flex-col items-center justify-center text-center max-w-md mx-auto">
+        <div className="w-20 h-20 bg-border/30 rounded-3xl flex items-center justify-center mx-auto mb-6">
+          <Loader2 className="w-10 h-10 text-foreground-secondary" />
+        </div>
+        <h1 className="text-3xl font-bold text-foreground mb-3">No images found</h1>
+        <p className="text-foreground-secondary mb-6">This session has no processed images yet.</p>
+        <button onClick={() => navigate('/')} className="btn inline-flex items-center gap-2 px-6 py-3 bg-primary text-primary-foreground rounded-2xl">Back to Upload</button>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen py-20 px-4 sm:px-6 lg:px-8">
       {/* Header */}
@@ -137,13 +183,19 @@ const Results = () => {
         </AnimatePresence>
       </div>
 
-      {/* Home CTA */}
-      <motion.div 
-        className="text-center"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.3 }}
-      >
+      {/* Bulk actions + Home CTA */}
+      <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4">
+        {files.some(f => !f.error && f.filename && f.token) && (
+          <motion.button
+            className="btn inline-flex items-center gap-2 px-6 py-3 bg-background-paper border border-border hover:border-primary/50 text-foreground rounded-2xl text-base font-medium shadow-card"
+            onClick={copyAllLinks}
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+          >
+            <Copy className="w-4 h-4" />
+            Copy All Links
+          </motion.button>
+        )}
         <motion.button
           className="btn flex items-center gap-3 px-10 py-5 bg-gradient-to-r from-primary to-accent text-primary-foreground rounded-3xl text-xl font-semibold shadow-card hover:shadow-glass"
           onClick={() => navigate('/')}
@@ -153,7 +205,12 @@ const Results = () => {
           <Home className="w-6 h-6" />
           Back to Upload
         </motion.button>
-      </motion.div>
+      </div>
+
+      {/* Minimal footer for consistent navigation on Results */}
+      <footer className="mt-16 text-center text-foreground-secondary text-xs border-t border-border/40 pt-6">
+        <button onClick={() => navigate('/')} className="hover:text-foreground underline-offset-2 hover:underline">Start a new upload</button>
+      </footer>
     </div>
   );
 };
