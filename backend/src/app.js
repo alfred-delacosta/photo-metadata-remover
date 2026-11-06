@@ -103,7 +103,9 @@ const upload = multer({
 
 async function processBuffer(buffer, outputPath, preset, format) {
   console.log('Processing image to', outputPath, 'preset:', preset, 'format:', format);
-  let image = sharp(buffer).withMetadata(false);
+  // sharp strips metadata by default; do not call withMetadata() (including with false),
+  // because any withMetadata(...) call keeps input metadata in sharp 0.35+.
+  let image = sharp(buffer);
   if (preset.maxWidth !== Infinity) {
     image = image.resize({ width: preset.maxWidth, height: preset.maxHeight, fit: 'inside', withoutEnlargement: true });
   }
