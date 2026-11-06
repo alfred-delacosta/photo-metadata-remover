@@ -89,14 +89,26 @@ const storage = multer.diskStorage({
   }
 });
 
+const MAX_UPLOAD_BYTES = 10 * 1024 * 1024; // 10MB per file (matches UI copy)
+
 const upload = multer({
   storage: storage,
+  limits: {
+    fileSize: MAX_UPLOAD_BYTES,
+    files: 5
+  },
   fileFilter: (req, file, cb) => {
-    const allowedTypes = ['image/jpeg', 'image/png', 'image/heic', 'application/octet-stream', 'image/gif', 'image/bmp', 'image/tiff'];
+    const allowedTypes = [
+      'image/jpeg',
+      'image/png',
+      'image/webp',
+      'image/heic',
+      'image/heif'
+    ];
     if (allowedTypes.includes(file.mimetype)) {
       cb(null, true);
     } else {
-      cb(new Error('Only JPEG, PNG, HEIC, GIF, BMP, and TIFF files are allowed'), false);
+      cb(new Error('Only JPEG, PNG, WebP, and HEIC files are allowed'), false);
     }
   }
 });
@@ -256,7 +268,7 @@ app.get('/api/session/:sessionId', async (req, res) => {
     await cleanupSession(sessionId);
     return res.status(403).json({ error: 'Session expired or invalid' });
   }
-  res.json({ files: session.files });
+  res.json({ files: session.files, expTime: session.expTime });
 });
 
 app.get('/api/progress/:sessionId', async (req, res) => {
@@ -375,6 +387,18 @@ if (process.env.ENVIRONMENT === "production") {
 // Error handling middleware
 app.use((err, req, res, next) => {
   console.error('Error:', err);
+  if (err instanceof multer.MulterError) {
+    if (err.code === 'LIMIT_FILE_SIZE') {
+      return res.status(400).json({ error: 'Each file must be 10MB or smaller' });
+    }
+    if (err.code === 'LIMIT_FILE_COUNT' || err.code === 'LIMIT_UNEXPECTED_FILE') {
+      return res.status(400).json({ error: 'Up to 5 images are allowed per upload' });
+    }
+    return res.status(400).json({ error: err.message });
+  }
+  if (err?.message?.includes('Only JPEG')) {
+    return res.status(400).json({ error: err.message });
+  }
   res.status(500).json({ error: 'Internal server error' });
 });
 
