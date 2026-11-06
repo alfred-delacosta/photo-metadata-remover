@@ -1,24 +1,15 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router";
 import { motion, AnimatePresence } from "framer-motion";
-import { Home, Loader2 } from "lucide-react";
+import { Home, Loader2, ShieldCheck } from "lucide-react";
 import ImgMediaCard from "../components/ImgMediaCard";
+import ThemeToggle from "../components/ThemeToggle";
 import api from "../lib/axios";
 
 /**
- * Modern Results Page - Masonry Gallery with Staggered Animation
- * 
- * Key improvements:
- * - Responsive masonry layout using Tailwind columns (mobile: single column, desktop: 4-column)
- * - Staggered entrance for cards using Framer Motion
- * - Skeleton loaders for smooth perceived loading (3 placeholders)
- * - Polished error state with illustration-like icon
- * - Modern header with gradient text and count
- * 
- * Why masonry? Creates an "infinite gallery" feel even with few items.
- * Responsive breakpoints ensure perfect flow on all devices.
+ * Results gallery: metadata-stripped, resized images for a session.
  */
-const Results = () => {
+const Results = ({ isDark, onToggleTheme }) => {
   const { sessionId } = useParams();
   const [files, setFiles] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -30,9 +21,9 @@ const Results = () => {
     const poll = async () => {
       try {
         const res = await api.get(`/session/${sessionId}`);
-        setFiles(res.data.files);
-        setExpTime(Number(res.data.expTime));
-        if (res.data.files.length > 0) setLoading(false);
+        setFiles(res.data.files || []);
+        setExpTime(Number(res.data.expTime) || 0);
+        setLoading(false);
       } catch {
         setError(true);
         setLoading(false);
@@ -46,26 +37,15 @@ const Results = () => {
 
   useEffect(() => {
     if (expTime > 0) {
-      localStorage.setItem('photoResults', JSON.stringify({ sessionId, expTime }));
+      localStorage.setItem("photoResults", JSON.stringify({ sessionId, expTime }));
     }
   }, [sessionId, expTime]);
-
-  // Skeleton Loader Component
-  const SkeletonCard = () => (
-    <div className="bg-background-paper rounded-3xl p-6 shadow-card animate-pulse">
-      <div className="aspect-[4/3] bg-border rounded-2xl mb-4 shimmer" />
-      <div className="space-y-2">
-        <div className="h-4 bg-border rounded w-3/4" />
-        <div className="h-3 bg-border/80 rounded w-full" />
-        <div className="h-3 bg-border/60 rounded w-5/6" />
-      </div>
-    </div>
-  );
 
   if (loading) {
     return (
       <div className="min-h-screen py-20 px-4 flex flex-col items-center justify-center">
-        <motion.div 
+        <ThemeToggle isDark={isDark} onToggleTheme={onToggleTheme} />
+        <motion.div
           className="w-12 h-12 border-4 border-primary/20 border-t-primary rounded-full animate-spin mb-6"
           animate={{ rotate: 360 }}
           transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
@@ -79,6 +59,7 @@ const Results = () => {
   if (error) {
     return (
       <div className="min-h-screen py-20 px-4 flex flex-col items-center justify-center text-center max-w-md mx-auto">
+        <ThemeToggle isDark={isDark} onToggleTheme={onToggleTheme} />
         <div className="w-32 h-32 bg-error/10 rounded-3xl flex items-center justify-center mx-auto mb-8 border-4 border-error/20">
           <Loader2 className="w-20 h-20 text-error animate-spin" />
         </div>
@@ -90,9 +71,10 @@ const Results = () => {
         </p>
         <motion.button
           className="btn flex items-center gap-3 px-8 py-4 bg-primary text-primary-foreground rounded-3xl text-lg font-semibold shadow-card hover:shadow-glass"
-          onClick={() => navigate('/')}
+          onClick={() => navigate("/")}
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
+          type="button"
         >
           <Home className="w-5 h-5" />
           Go to Homepage
@@ -103,28 +85,32 @@ const Results = () => {
 
   return (
     <div className="min-h-screen py-20 px-4 sm:px-6 lg:px-8">
-      {/* Header */}
-      <motion.div 
-        className="text-center mb-20"
+      <ThemeToggle isDark={isDark} onToggleTheme={onToggleTheme} />
+
+      <motion.div
+        className="text-center mb-12"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
       >
         <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold bg-gradient-to-r from-primary via-accent to-success bg-clip-text text-transparent mb-4 leading-none pb-2">
-          Processed Images
+          Ready to Share
         </h1>
-        <p className="text-2xl md:text-3xl text-foreground-secondary">
-          {files.length} ready for download
+        <p className="text-2xl md:text-3xl text-foreground-secondary mb-4">
+          {files.length} image{files.length !== 1 ? "s" : ""} processed
+        </p>
+        <p className="inline-flex items-center gap-2 text-success font-medium bg-success/10 px-4 py-2 rounded-2xl">
+          <ShieldCheck className="w-5 h-5" />
+          Metadata removed and files compressed for safer sharing
         </p>
       </motion.div>
 
-      {/* Masonry Gallery */}
       <div className="columns-1 sm:columns-2 lg:columns-3 xl:columns-4 gap-10 max-w-7xl mx-auto mb-20 px-4">
         <AnimatePresence>
           {files.map((file, i) => (
             <motion.div
-              key={`${file.filename}-${i}`}
-              className="mb-10"
+              key={`${file.filename || file.origName}-${i}`}
+              className="mb-10 break-inside-avoid"
               initial={{ opacity: 0, y: 50 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0 }}
@@ -137,18 +123,18 @@ const Results = () => {
         </AnimatePresence>
       </div>
 
-      {/* Home CTA */}
-      <motion.div 
+      <motion.div
         className="text-center"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.3 }}
       >
         <motion.button
-          className="btn flex items-center gap-3 px-10 py-5 bg-gradient-to-r from-primary to-accent text-primary-foreground rounded-3xl text-xl font-semibold shadow-card hover:shadow-glass"
-          onClick={() => navigate('/')}
+          className="btn flex items-center gap-3 px-10 py-5 bg-gradient-to-r from-primary to-accent text-primary-foreground rounded-3xl text-xl font-semibold shadow-card hover:shadow-glass mx-auto"
+          onClick={() => navigate("/")}
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
+          type="button"
         >
           <Home className="w-6 h-6" />
           Back to Upload

@@ -1,6 +1,6 @@
 # 🖼️ Photo Metadata Remover
 
-Welcome to the **Photo Metadata Remover**, a powerful web application designed to strip metadata from images, resize/compress, and support HEIC/JPG/PNG. Built with **Node.js**, **Express.js**, **React.js**, **Sharp**, and **Material UI**, this app combines performance with a modern, user-friendly interface. 🚀 It includes multi-upload, progress tracking, and automatic cleanup for enhanced security. 🕒
+Welcome to the **Photo Metadata Remover**, a web application that strips metadata from images and resizes/compresses them for safer, easier sharing. Built with **Node.js**, **Express.js**, **React**, **Vite**, **Tailwind CSS**, and **Sharp**. It supports multi-upload, progress tracking, and automatic cleanup of temporary files.
 
 🔗 👉🏻 https://pmr.ajscreation.com 
 
@@ -13,14 +13,14 @@ Welcome to the **Photo Metadata Remover**, a powerful web application designed t
 - **Results Page**: Grid thumbnails + temp URLs list with copy. 📋
 - **Re-Resize**: View page allows re-processing with new options. 🔄
 - **Automatic File Cleanup**: Processed images auto-deleted after expiration. 🕒
-- **Responsive UI**: Mobile-friendly Material UI. 📱
+- **Responsive UI**: Mobile-friendly Tailwind UI. 📱
 - **Fast & Secure**: Server-side processing with Sharp for quick operations. 🔒
 - **HEIC Support**: Handles HEIC inputs (libheif dep on VPS). 📸
 
 ## 🛠️ Tech Stack
 
 - **Backend**: Node.js, Express.js, Sharp, Multer
-- **Frontend**: React.js, Vite, Material UI, Axios, Dropzone
+- **Frontend**: React, Vite, Tailwind CSS, Axios, Dropzone, Framer Motion
 - **Image Processing**: Sharp (libvips)
 
 ## 🚀 Getting Started
