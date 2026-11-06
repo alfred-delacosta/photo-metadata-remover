@@ -13,6 +13,15 @@ import api from "../lib/axios";
 import Countdown from "react-countdown";
 import toast from "react-hot-toast";
 import ThemeToggle from "../components/ThemeToggle";
+import BrandMark from "../components/BrandMark";
+import SiteFooter from "../components/SiteFooter";
+
+const PRESETS = [
+  { id: "low", label: "Low" },
+  { id: "medium", label: "Medium" },
+  { id: "high", label: "High" },
+  { id: "orig", label: "Original" }
+];
 
 /**
  * Full-screen viewer with reprocess controls.
@@ -41,6 +50,8 @@ const ViewImage = ({ isDark, onToggleTheme }) => {
   const [imageScale, setImageScale] = useState(1);
   const [reprocessing, setReprocessing] = useState(false);
   const imageRef = useRef(null);
+  const sidebarRef = useRef(null);
+  const toggleButtonRef = useRef(null);
 
   useEffect(() => {
     setActiveToken(initialToken);
@@ -111,8 +122,13 @@ const ViewImage = ({ isDark, onToggleTheme }) => {
 
   useEffect(() => {
     const handleKeyDown = (e) => {
-      if (e.key === "Escape") setSidebarOpen(false);
-      if ((e.key === "d" || e.key === "D") && imageUrl) {
+      if (e.key === "Escape") {
+        setSidebarOpen(false);
+        toggleButtonRef.current?.focus();
+      }
+      if ((e.key === "d" || e.key === "D") && imageUrl && !e.metaKey && !e.ctrlKey && !e.altKey) {
+        const tag = e.target?.tagName;
+        if (tag === "INPUT" || tag === "TEXTAREA" || e.target?.isContentEditable) return;
         const link = document.createElement("a");
         link.href = imageUrl;
         link.download = imageName;
@@ -123,6 +139,13 @@ const ViewImage = ({ isDark, onToggleTheme }) => {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [imageUrl, imageName]);
 
+  useEffect(() => {
+    if (sidebarOpen) {
+      const firstFocusable = sidebarRef.current?.querySelector("button, [href], input");
+      firstFocusable?.focus();
+    }
+  }, [sidebarOpen]);
+
   const handleWheel = useCallback((e) => {
     e.preventDefault();
     const delta = e.deltaY > 0 ? 0.9 : 1.1;
@@ -131,10 +154,15 @@ const ViewImage = ({ isDark, onToggleTheme }) => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen min-h-[100dvh] flex flex-col items-center justify-center">
+        <BrandMark />
         <ThemeToggle isDark={isDark} onToggleTheme={onToggleTheme} />
         <div className="text-center">
-          <div className="w-16 h-16 border-4 border-primary/20 border-t-primary rounded-full animate-spin mx-auto mb-6" />
+          <div
+            className="w-16 h-16 border-4 border-primary/20 border-t-primary rounded-full animate-spin mx-auto mb-6"
+            role="status"
+            aria-label="Loading image"
+          />
           <p className="text-xl text-foreground">Loading image...</p>
         </div>
       </div>
@@ -143,28 +171,32 @@ const ViewImage = ({ isDark, onToggleTheme }) => {
 
   if (!imageUrl) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen min-h-[100dvh] flex flex-col px-4">
+        <BrandMark />
         <ThemeToggle isDark={isDark} onToggleTheme={onToggleTheme} />
-        <div className="text-center max-w-md">
-          <div className="w-32 h-32 bg-border/20 rounded-3xl flex items-center justify-center mx-auto mb-8">
-            <Maximize2 className="w-20 h-20 text-foreground-secondary opacity-50" />
+        <main className="flex-1 flex items-center justify-center">
+          <div className="text-center max-w-md">
+            <div className="w-32 h-32 bg-border/20 rounded-card flex items-center justify-center mx-auto mb-8">
+              <Maximize2 className="w-20 h-20 text-foreground-secondary opacity-50" aria-hidden="true" />
+            </div>
+            <h1 className="font-display text-4xl font-bold text-foreground mb-4">Image not found</h1>
+            <button
+              className="btn focus-ring px-8 py-4 bg-primary text-primary-foreground rounded-card text-lg"
+              onClick={() => window.history.back()}
+              type="button"
+            >
+              Go back
+            </button>
           </div>
-          <h1 className="text-4xl font-bold text-foreground mb-4">Image Not Found</h1>
-          <motion.button
-            className="btn px-8 py-4 bg-primary text-primary-foreground rounded-3xl text-lg"
-            onClick={() => window.history.back()}
-            whileHover={{ scale: 1.05 }}
-            type="button"
-          >
-            Go Back
-          </motion.button>
-        </div>
+        </main>
+        <SiteFooter />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background overflow-hidden relative">
+    <div className="min-h-screen min-h-[100dvh] bg-background overflow-hidden relative">
+      <BrandMark />
       <ThemeToggle isDark={isDark} onToggleTheme={onToggleTheme} />
 
       <motion.div
@@ -174,54 +206,64 @@ const ViewImage = ({ isDark, onToggleTheme }) => {
         style={{ transform: `scale(${imageScale})` }}
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        transition={{ duration: 0.5 }}
+        transition={{ duration: 0.3 }}
       >
         <img
           src={imageUrl}
           alt={imageName}
-          className="max-w-full max-h-[90vh] object-contain rounded-2xl shadow-2xl"
+          className="max-w-full max-h-[90vh] object-contain rounded-card shadow-card"
         />
       </motion.div>
 
-      <motion.button
-        className="fixed bottom-8 right-8 p-4 bg-primary/95 backdrop-blur-sm rounded-3xl shadow-glass border text-primary-foreground hover:bg-primary z-50"
+      <p className="fixed bottom-8 left-6 z-40 text-xs text-foreground-secondary bg-background-paper/90 border border-border rounded-control px-3 py-2 backdrop-blur-sm">
+        Esc closes panel. D downloads.
+      </p>
+
+      <p className="fixed bottom-8 left-1/2 -translate-x-1/2 z-40 text-xs text-foreground-muted hidden sm:block">
+        Copyright (c) {new Date().getFullYear()} Advanced Software and AI Solutions LLC
+      </p>
+
+      <button
+        className="fixed bottom-8 right-8 p-4 min-w-11 min-h-11 flex items-center justify-center bg-primary/95 backdrop-blur-sm rounded-card shadow-glass border border-primary text-primary-foreground hover:bg-primary z-50 focus-ring"
         onClick={() => {
           const link = document.createElement("a");
           link.href = imageUrl;
           link.download = imageName;
           link.click();
         }}
-        whileHover={{ scale: 1.1 }}
-        whileTap={{ scale: 0.95 }}
-        title="Download (D key)"
+        aria-label={`Download ${imageName || "image"} (D)`}
         type="button"
       >
-        <Download className="w-6 h-6" />
-      </motion.button>
+        <Download className="w-6 h-6" aria-hidden="true" />
+      </button>
 
-      <motion.button
-        className="fixed top-1/2 left-4 -translate-y-1/2 p-3 bg-background-paper/90 backdrop-blur-sm rounded-2xl border hover:border-primary/50 z-50 shadow-card"
+      <button
+        ref={toggleButtonRef}
+        className="fixed top-1/2 left-4 -translate-y-1/2 p-3 min-w-11 min-h-11 flex items-center justify-center bg-background-paper/90 backdrop-blur-sm rounded-card border border-border hover:border-primary/50 z-50 shadow-card focus-ring"
         onClick={() => setSidebarOpen(!sidebarOpen)}
-        whileHover={{ scale: 1.05 }}
-        whileTap={{ scale: 0.95 }}
-        title="Toggle Details (ESC)"
+        aria-expanded={sidebarOpen}
+        aria-controls="image-details-panel"
+        aria-label={sidebarOpen ? "Close details panel" : "Open details panel"}
         type="button"
       >
-        <ChevronLeft className={`w-6 h-6 transition-transform ${sidebarOpen ? "rotate-180" : ""}`} />
-      </motion.button>
+        <ChevronLeft className={`w-6 h-6 transition-transform ${sidebarOpen ? "rotate-180" : ""}`} aria-hidden="true" />
+      </button>
 
       <motion.aside
+        id="image-details-panel"
+        ref={sidebarRef}
         className="fixed right-0 top-0 h-full w-80 lg:w-96 bg-background-paper/95 backdrop-blur-xl border-l border-border/50 shadow-glass p-8 overflow-y-auto z-40"
         animate={{ x: sidebarOpen ? 0 : "100%" }}
         initial={{ x: "100%" }}
         transition={{ type: "spring", stiffness: 300, damping: 30 }}
+        aria-hidden={!sidebarOpen}
       >
         <div className="sticky top-0 pb-8 border-b border-border/50 mb-8 bg-background-paper/95">
-          <h2 className="text-3xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent mb-2">
+          <h2 className="font-display text-2xl font-bold text-primary mb-2">
             {imageName}
           </h2>
           <div className="flex items-center gap-2 text-sm text-foreground-secondary mb-4">
-            <Clock className="w-4 h-4" />
+            <Clock className="w-4 h-4" aria-hidden="true" />
             <Countdown
               date={linkCountdown}
               renderer={({ hours, minutes, seconds }) => (
@@ -236,7 +278,7 @@ const ViewImage = ({ isDark, onToggleTheme }) => {
         <div className="space-y-6 mb-8">
           <div>
             <h3 className="font-semibold text-foreground mb-3 flex items-center gap-2">
-              <Settings className="w-5 h-5" />
+              <Settings className="w-5 h-5" aria-hidden="true" />
               Details
             </h3>
             <div className="space-y-3 text-sm">
@@ -267,67 +309,70 @@ const ViewImage = ({ isDark, onToggleTheme }) => {
 
         <div>
           <h3 className="font-semibold text-foreground mb-4 flex items-center gap-2">
-            <Settings className="w-5 h-5" />
+            <Settings className="w-5 h-5" aria-hidden="true" />
             Reprocess
           </h3>
-          <p className="text-xs text-foreground-secondary mb-4 flex items-start gap-2 bg-background-elevated rounded-xl p-3">
-            <Info className="w-4 h-4 shrink-0 mt-0.5" />
+          <p className="text-xs text-foreground-secondary mb-4 flex items-start gap-2 bg-background-elevated rounded-card p-3">
+            <Info className="w-4 h-4 shrink-0 mt-0.5" aria-hidden="true" />
             Reprocess works from the already-processed file. Extra passes can reduce quality
             further. Prefer the original upload for a fresh encode when possible.
           </p>
-          <div className="grid grid-cols-2 gap-2 mb-6">
-            {["low", "medium", "high", "orig"].map((p) => (
-              <motion.button
-                key={p}
-                className={`p-3 rounded-xl border-2 font-medium text-sm transition-all btn ${
-                  preset === p
-                    ? "bg-primary text-primary-foreground border-primary shadow-md"
+          <div role="radiogroup" aria-label="Resize preset" className="grid grid-cols-2 gap-2 mb-6">
+            {PRESETS.map((p) => (
+              <button
+                key={p.id}
+                className={`focus-ring p-3 rounded-control border-2 font-medium text-sm transition-colors btn ${
+                  preset === p.id
+                    ? "bg-primary text-primary-foreground border-primary shadow-card"
                     : "border-border hover:border-primary/50 text-foreground-secondary"
                 }`}
-                onClick={() => setPreset(p)}
-                whileHover={{ scale: 1.02 }}
+                onClick={() => setPreset(p.id)}
+                role="radio"
+                aria-checked={preset === p.id}
                 type="button"
               >
-                {p.charAt(0).toUpperCase() + p.slice(1)}
-              </motion.button>
+                {p.label}
+              </button>
             ))}
           </div>
-          <div className="grid grid-cols-2 gap-2 mb-6">
+          <div role="radiogroup" aria-label="Output format" className="grid grid-cols-2 gap-2 mb-6">
             {["jpeg", "webp"].map((f) => (
-              <motion.button
+              <button
                 key={f}
-                className={`p-3 rounded-xl border-2 font-medium text-sm transition-all btn ${
+                className={`focus-ring p-3 rounded-control border-2 font-medium text-sm transition-colors btn ${
                   format === f
-                    ? "bg-primary text-primary-foreground border-primary shadow-md"
+                    ? "bg-primary text-primary-foreground border-primary shadow-card"
                     : "border-border hover:border-primary/50 text-foreground-secondary"
                 }`}
                 onClick={() => setFormat(f)}
-                whileHover={{ scale: 1.02 }}
+                role="radio"
+                aria-checked={format === f}
                 type="button"
               >
                 {f.toUpperCase()}
-              </motion.button>
+              </button>
             ))}
           </div>
-          <motion.button
-            className="w-full btn bg-gradient-to-r from-primary to-accent text-primary-foreground py-4 px-6 rounded-2xl text-lg font-semibold shadow-card hover:shadow-glass disabled:opacity-60"
+          <button
+            className="w-full btn focus-ring bg-primary text-primary-foreground py-4 px-6 rounded-card text-lg font-semibold shadow-card disabled:opacity-60"
             onClick={handleReprocess}
-            whileHover={{ scale: reprocessing ? 1 : 1.02 }}
-            whileTap={{ scale: reprocessing ? 1 : 0.98 }}
             disabled={reprocessing}
             type="button"
           >
-            {reprocessing ? "Reprocessing..." : "Reprocess Image"}
-          </motion.button>
+            {reprocessing ? "Reprocessing..." : "Reprocess image"}
+          </button>
         </div>
       </motion.aside>
 
       {sidebarOpen && (
-        <motion.div
-          className="fixed inset-0 bg-black/50 backdrop-blur-sm z-30"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          onClick={() => setSidebarOpen(false)}
+        <button
+          type="button"
+          className="fixed inset-0 bg-black/50 z-30 cursor-default"
+          aria-label="Close details panel"
+          onClick={() => {
+            setSidebarOpen(false);
+            toggleButtonRef.current?.focus();
+          }}
         />
       )}
     </div>
