@@ -119,7 +119,7 @@ ISC.
 ## 🙏 Acknowledgments
 
 - [Sharp](https://sharp.pixelplumbing.com/) for image processing.
-- [Material UI](https://mui.com/) for components.
+- [Tailwind CSS](https://tailwindcss.com/) for styling.
 - [React](https://reactjs.org/) and [Express](https://expressjs.com/) for frameworks.
 
 ---
