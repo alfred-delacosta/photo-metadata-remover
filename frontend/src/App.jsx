@@ -32,20 +32,27 @@ function App() {
     }
   }, [isDark]);
 
+  const pageTransition = {
+    initial: { opacity: 0, y: 12 },
+    animate: { opacity: 1, y: 0 },
+    exit: { opacity: 0 },
+    transition: { duration: 0.22, ease: [0.2, 0, 0, 1] },
+  };
+
   return (
-    <div className="min-h-screen bg-background text-foreground overflow-x-hidden">
+    <div className="min-h-screen min-h-[100dvh] bg-background text-foreground overflow-x-hidden">
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-[100] focus:px-4 focus:py-2 focus:bg-primary focus:text-primary-foreground focus:rounded-control"
+      >
+        Skip to content
+      </a>
       <AnimatePresence mode="wait">
         <Routes location={location} key={location.pathname}>
           <Route
             path="/"
             element={
-              <motion.div
-                key="upload"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
-                transition={{ duration: 0.4, ease: "easeOut" }}
-              >
+              <motion.div key="upload" {...pageTransition}>
                 <FileUpload isDark={isDark} onToggleTheme={toggleTheme} />
               </motion.div>
             }
@@ -53,13 +60,7 @@ function App() {
           <Route
             path="/viewImage/:filename"
             element={
-              <motion.div
-                key="view"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.3 }}
-              >
+              <motion.div key="view" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.22 }}>
                 <ViewImage isDark={isDark} onToggleTheme={toggleTheme} />
               </motion.div>
             }
@@ -67,19 +68,27 @@ function App() {
           <Route
             path="/results/:sessionId"
             element={
-              <motion.div
-                key="results"
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.4 }}
-              >
+              <motion.div key="results" {...pageTransition}>
                 <Results isDark={isDark} onToggleTheme={toggleTheme} />
               </motion.div>
             }
           />
-          <Route path="/notfound" element={<NotFound />} />
-          <Route path="/*" element={<NotFound />} />
+          <Route
+            path="/notfound"
+            element={
+              <motion.div key="notfound" {...pageTransition}>
+                <NotFound isDark={isDark} onToggleTheme={toggleTheme} />
+              </motion.div>
+            }
+          />
+          <Route
+            path="/*"
+            element={
+              <motion.div key="catch" {...pageTransition}>
+                <NotFound isDark={isDark} onToggleTheme={toggleTheme} />
+              </motion.div>
+            }
+          />
         </Routes>
       </AnimatePresence>
     </div>
