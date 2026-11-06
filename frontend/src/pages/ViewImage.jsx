@@ -10,6 +10,7 @@ import {
   Info
 } from "lucide-react";
 import api from "../lib/axios";
+import { downloadImage } from "../lib/downloadImage";
 import Countdown from "react-countdown";
 import toast from "react-hot-toast";
 import ThemeToggle from "../components/ThemeToggle";
@@ -140,10 +141,7 @@ const ViewImage = ({ isDark, onToggleTheme }) => {
       if ((e.key === "d" || e.key === "D") && imageUrl && !e.metaKey && !e.ctrlKey && !e.altKey) {
         const tag = e.target?.tagName;
         if (tag === "INPUT" || tag === "TEXTAREA" || e.target?.isContentEditable) return;
-        const link = document.createElement("a");
-        link.href = imageUrl;
-        link.download = imageName;
-        link.click();
+        downloadImage(imageUrl, imageName);
       }
     };
     window.addEventListener("keydown", handleKeyDown);
@@ -236,12 +234,7 @@ const ViewImage = ({ isDark, onToggleTheme }) => {
 
       <button
         className="fixed safe-fixed-bottom-right p-4 min-w-11 min-h-11 flex items-center justify-center bg-primary/95 backdrop-blur-sm rounded-card shadow-glass border border-primary text-primary-foreground hover:bg-primary z-50 focus-ring"
-        onClick={() => {
-          const link = document.createElement("a");
-          link.href = imageUrl;
-          link.download = imageName;
-          link.click();
-        }}
+        onClick={() => downloadImage(imageUrl, imageName)}
         aria-label={`Download ${imageName || "image"} (D)`}
         type="button"
       >

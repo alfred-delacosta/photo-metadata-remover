@@ -295,8 +295,14 @@ app.get('/api/image/:filename', async (req, res) => {
   }
   const downloadName = path.basename(fileInfo.origName || fileInfo.filename || 'image');
   const safeName = downloadName.replace(/[^\w.\-()+ ]+/g, '_') || 'image';
+  const forceDownload = req.query.download === '1' || req.query.download === 'true';
   res.set('Cache-Control', 'private, max-age=300'); // Cache for 5 minutes, matching link expiration
-  res.set('Content-Disposition', `attachment; filename="${safeName}"`);
+  // Default to inline so <img> / PWA previews stay in-app. attachment only when explicitly requested.
+  // Always-on attachment made iOS standalone navigate to a chrome-less black preview on download taps.
+  res.set(
+    'Content-Disposition',
+    `${forceDownload ? 'attachment' : 'inline'}; filename="${safeName}"`
+  );
   res.sendFile(path.resolve(fileInfo.filePath), err => {
     if (err) {
       console.error('File serving error:', err);
