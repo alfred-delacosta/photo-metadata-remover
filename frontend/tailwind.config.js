@@ -8,10 +8,10 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        sans: ['Inter', 'system-ui', 'sans-serif'],
+        sans: ['"Source Sans 3"', 'system-ui', 'sans-serif'],
+        display: ['"Source Serif 4"', 'Georgia', 'serif'],
       },
       colors: {
-        // Palette via CSS variables for light/dark support
         background: 'rgb(var(--background) / <alpha-value>)',
         'background-paper': 'rgb(var(--background-paper) / <alpha-value>)',
         'background-elevated': 'rgb(var(--background-elevated) / <alpha-value>)',
@@ -27,9 +27,13 @@ export default {
         'success-foreground': 'rgb(var(--success-foreground) / <alpha-value>)',
         error: 'rgb(var(--error) / <alpha-value>)',
       },
+      borderRadius: {
+        control: '4px',
+        card: '8px',
+      },
       boxShadow: {
-        'glass': '0 8px 32px -4px rgb(0 0 0 / 0.3), 0 0 0 1px rgb(255 255 255 / 0.05)',
-        'card': '0 10px 15px -3px rgb(0 0 0 / 0.3), 0 4px 6px -4px rgb(0 0 0 / 0.3)',
+        glass: '0 4px 20px -4px rgb(0 0 0 / 0.12), 0 0 0 1px rgb(0 0 0 / 0.04)',
+        card: '0 4px 12px -2px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.06)',
       },
       animation: {
         'fade-in': 'fadeIn 0.4s ease-out forwards',

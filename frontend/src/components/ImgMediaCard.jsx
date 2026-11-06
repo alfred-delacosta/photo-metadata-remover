@@ -47,51 +47,43 @@ export default function ImgMediaCard({ file, isResults = false, expTime }) {
 
   if (error) {
     return (
-      <motion.div
-        className="bg-background-paper border border-border/50 rounded-3xl p-8 flex flex-col items-center text-center h-full shadow-card hover:shadow-glass transition-all duration-300"
-        whileHover={{ y: -2 }}
-      >
-        <AlertCircle className="w-16 h-16 text-error mb-4 opacity-75" />
-        <h3 className="text-lg font-bold text-foreground mb-2">Processing Failed</h3>
+      <div className="bg-background-paper border border-border/50 rounded-card p-8 flex flex-col items-center text-center h-full shadow-card">
+        <AlertCircle className="w-16 h-16 text-error mb-4 opacity-75" aria-hidden="true" />
+        <h3 className="text-lg font-semibold text-foreground mb-2">Processing failed</h3>
         <p className="text-foreground-secondary text-sm">{origName}</p>
         <p className="text-error text-sm mt-1">{error}</p>
-      </motion.div>
+      </div>
     );
   }
 
   return (
     <motion.div
-      className="group relative bg-background-paper rounded-3xl shadow-card hover:shadow-glass overflow-hidden h-full flex flex-col transition-all duration-500 border border-border/50"
-      initial={{ opacity: 0, y: 20 }}
+      className="group relative bg-background-paper rounded-card shadow-card hover:shadow-glass overflow-hidden h-full flex flex-col transition-shadow duration-200 border border-border/50"
+      initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
-      whileHover={{ y: -8 }}
-      transition={{ duration: 0.3 }}
+      transition={{ duration: 0.25 }}
     >
       {imageLink && (
-        <div className="relative overflow-hidden rounded-t-3xl">
-          <img src={imageLink} alt={imageName} className="w-full h-48 object-cover" />
-          <div className="absolute inset-0 bg-black/50 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+        <div className="relative overflow-hidden rounded-t-card">
+          <img src={imageLink} alt={imageName || "Processed image"} className="w-full h-48 object-cover" />
+          <div className="absolute inset-0 bg-black/50 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center">
             <div className="flex gap-2">
-              <motion.button
+              <button
                 type="button"
                 onClick={() => window.open(`/viewImage/${filename}?token=${token}`, "_blank")}
-                className="p-2 bg-white/20 backdrop-blur-sm rounded-full text-white hover:bg-white/30 transition-colors"
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.9 }}
-                title="View and reprocess"
+                className="focus-ring p-2 min-w-11 min-h-11 flex items-center justify-center bg-white/20 backdrop-blur-sm rounded-control text-white hover:bg-white/30 transition-colors"
+                aria-label={`View and reprocess ${imageName || "image"}`}
               >
-                <Eye className="w-5 h-5" />
-              </motion.button>
-              <motion.button
+                <Eye className="w-5 h-5" aria-hidden="true" />
+              </button>
+              <button
                 type="button"
                 onClick={copyLink}
-                className="p-2 bg-white/20 backdrop-blur-sm rounded-full text-white hover:bg-white/30 transition-colors"
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.9 }}
-                title="Share Link"
+                className="focus-ring p-2 min-w-11 min-h-11 flex items-center justify-center bg-white/20 backdrop-blur-sm rounded-control text-white hover:bg-white/30 transition-colors"
+                aria-label={`Copy share link for ${imageName || "image"}`}
               >
-                <Share2 className="w-5 h-5" />
-              </motion.button>
+                <Share2 className="w-5 h-5" aria-hidden="true" />
+              </button>
             </div>
           </div>
         </div>
@@ -118,49 +110,42 @@ export default function ImgMediaCard({ file, isResults = false, expTime }) {
             ) : null}
           </p>
           <p className="mt-2 inline-flex items-center gap-1 text-xs font-medium text-success">
-            <ShieldCheck className="w-3.5 h-3.5" />
+            <ShieldCheck className="w-3.5 h-3.5" aria-hidden="true" />
             Metadata removed
           </p>
         </div>
         <div className="pt-4 mt-auto grid grid-cols-2 gap-2">
-          <motion.a
+          <a
             href={imageLink}
             download={imageName}
-            className="btn flex items-center justify-center gap-2 p-3 bg-primary text-primary-foreground rounded-2xl text-sm font-medium"
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
+            className="btn focus-ring flex items-center justify-center gap-2 p-3 bg-primary text-primary-foreground rounded-control text-sm font-medium"
           >
-            <Download className="w-4 h-4" />
+            <Download className="w-4 h-4" aria-hidden="true" />
             Download
-          </motion.a>
+          </a>
           {!isResults && (
-            <motion.div className="btn flex items-center justify-center gap-2 p-3 bg-success text-success-foreground rounded-2xl text-sm font-medium">
-              <Link to="/" className="flex items-center gap-2">
-                <Home className="w-4 h-4" />
-                Home
-              </Link>
-            </motion.div>
+            <Link
+              to="/"
+              className="btn focus-ring flex items-center justify-center gap-2 p-3 bg-success text-success-foreground rounded-control text-sm font-medium"
+            >
+              <Home className="w-4 h-4" aria-hidden="true" />
+              Home
+            </Link>
           )}
           {isResults && (
-            <motion.button
+            <button
               type="button"
               onClick={copyLink}
-              className="btn flex items-center justify-center gap-2 p-3 border border-border rounded-2xl text-sm font-medium text-foreground"
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
+              className="btn focus-ring flex items-center justify-center gap-2 p-3 border border-border rounded-control text-sm font-medium text-foreground"
             >
-              <Share2 className="w-4 h-4" />
+              <Share2 className="w-4 h-4" aria-hidden="true" />
               Share
-            </motion.button>
+            </button>
           )}
         </div>
       </div>
       {isResults && expTime > Date.now() && (
-        <motion.div
-          className="p-4 border-t border-border/50 bg-background-elevated text-center"
-          initial={{ height: 0 }}
-          animate={{ height: "auto" }}
-        >
+        <div className="p-4 border-t border-border/50 bg-background-elevated text-center">
           <p className="text-xs text-foreground-secondary mb-1">Expires in:</p>
           <Countdown
             date={expTime}
@@ -172,7 +157,7 @@ export default function ImgMediaCard({ file, isResults = false, expTime }) {
               </span>
             )}
           />
-        </motion.div>
+        </div>
       )}
     </motion.div>
   );

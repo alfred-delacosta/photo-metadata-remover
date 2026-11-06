@@ -15,8 +15,9 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import api from "../lib/axios";
 import toast from "react-hot-toast";
-import { useNavigate, Link } from "react-router";
+import { useNavigate } from "react-router";
 import ThemeToggle from "./ThemeToggle";
+import SiteFooter from "./SiteFooter";
 
 const MAX_FILE_BYTES = 10 * 1024 * 1024;
 const ACCEPT = {
@@ -26,6 +27,18 @@ const ACCEPT = {
   "image/heic": [".heic"],
   "image/heif": [".heif"]
 };
+
+const PRESETS = [
+  { id: "low", label: "Low", hint: "1280x720, quality 70" },
+  { id: "medium", label: "Medium", hint: "1920x1080, quality 85" },
+  { id: "high", label: "High", hint: "3840x2160, quality 95" },
+  { id: "orig", label: "Original", hint: "No resize, quality 100" }
+];
+
+const FORMATS = [
+  { id: "jpeg", label: "JPEG" },
+  { id: "webp", label: "WebP" }
+];
 
 /**
  * Upload home: choose preset/format, review selected files, then strip and compress.
@@ -45,6 +58,7 @@ const FileUpload = ({ isDark, onToggleTheme }) => {
   const [isDragging, setIsDragging] = useState(false);
 
   const busy = status === "uploading" || status === "processing";
+  const selectedPreset = PRESETS.find((p) => p.id === preset);
 
   const handleUpload = useCallback(
     async (filesToUpload) => {
@@ -53,7 +67,7 @@ const FileUpload = ({ isDark, onToggleTheme }) => {
       setStatus("uploading");
       setUploadProgress(0);
       setFileStatuses(filesToUpload.map((file) => ({ name: file.name, status: "uploading" })));
-      toast("Starting upload...", { duration: 2000 });
+      toast("Uploading images...", { duration: 2000 });
 
       const formData = new FormData();
       filesToUpload.forEach((file) => formData.append("files", file));
@@ -89,7 +103,7 @@ const FileUpload = ({ isDark, onToggleTheme }) => {
         );
         setStatus("processing");
         setFileStatuses(filesToUpload.map((file) => ({ name: file.name, status: "processing" })));
-        toast.success("Upload complete, processing...");
+        toast.success("Upload received. Confirming results...");
       } catch (error) {
         console.error("Upload error:", error);
         setStatus("error");
@@ -189,7 +203,7 @@ const FileUpload = ({ isDark, onToggleTheme }) => {
           if (res.data.processed === res.data.total) {
             setStatus("completed");
             setFileStatuses((prev) => prev.map((f) => ({ ...f, status: "completed" })));
-            toast.success("Processing complete!");
+            toast.success("Your images are ready.");
           }
         } catch (error) {
           console.error("Progress poll error:", error);
@@ -213,353 +227,324 @@ const FileUpload = ({ isDark, onToggleTheme }) => {
     onDragLeave: () => setIsDragging(false)
   });
 
+  const rootProps = getRootProps();
+
   return (
-    <div className="min-h-screen flex flex-col justify-center py-8 px-4 sm:px-6 lg:px-8 max-w-6xl mx-auto">
+    <div className="min-h-screen min-h-[100dvh] flex flex-col py-8 px-4 sm:px-6 lg:px-8 max-w-6xl mx-auto">
       <ThemeToggle isDark={isDark} onToggleTheme={onToggleTheme} />
 
-      <motion.div
-        className="text-center mb-12"
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6 }}
-      >
-        <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent mb-4">
-          Photo Metadata Remover
-        </h1>
-        <p className="text-xl md:text-2xl text-foreground-secondary max-w-2xl mx-auto">
-          Strip EXIF metadata and compress photos so they are easier and safer to share. Up to 5
-          images, available for {expirationTime} minutes.
-        </p>
-      </motion.div>
-
-      <div className="flex flex-col lg:flex-row gap-4 justify-center mb-12 max-w-2xl mx-auto w-full">
-        <div className="flex-1">
-          <label className="block text-sm font-medium mb-2 text-foreground-secondary">Preset</label>
-          <div className="flex gap-1 flex-wrap">
-            {["low", "medium", "high", "orig"].map((p) => (
-              <motion.button
-                key={p}
-                type="button"
-                disabled={busy}
-                className={`px-4 py-3 rounded-lg border-2 transition-all duration-200 btn font-medium text-sm whitespace-nowrap disabled:opacity-50 ${
-                  preset === p
-                    ? "bg-primary text-primary-foreground border-primary shadow-card"
-                    : "border-border hover:border-primary/50 text-foreground-secondary hover:text-foreground"
-                }`}
-                onClick={() => setPreset(p)}
-                whileHover={{ scale: busy ? 1 : 1.05 }}
-                whileTap={{ scale: busy ? 1 : 0.95 }}
-              >
-                {p.charAt(0).toUpperCase() + p.slice(1)}
-              </motion.button>
-            ))}
-          </div>
-        </div>
-        <div className="flex-1">
-          <label className="block text-sm font-medium mb-2 text-foreground-secondary">Format</label>
-          <div className="flex gap-1">
-            {["jpeg", "webp"].map((f) => (
-              <motion.button
-                key={f}
-                type="button"
-                disabled={busy}
-                className={`px-4 py-3 rounded-lg border-2 transition-all duration-200 btn font-medium text-sm whitespace-nowrap disabled:opacity-50 ${
-                  format === f
-                    ? "bg-primary text-primary-foreground border-primary shadow-card"
-                    : "border-border hover:border-primary/50 text-foreground-secondary hover:text-foreground"
-                }`}
-                onClick={() => setFormat(f)}
-                whileHover={{ scale: busy ? 1 : 1.05 }}
-                whileTap={{ scale: busy ? 1 : 0.95 }}
-              >
-                {f.toUpperCase()}
-              </motion.button>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      <motion.div
-        {...getRootProps()}
-        className={`relative group border-2 border-dashed rounded-3xl p-12 md:p-20 text-center transition-all duration-300 ${
-          busy ? "cursor-not-allowed opacity-70" : "cursor-pointer"
-        } ${
-          isDragging || isDragActive
-            ? "border-accent bg-accent/5 backdrop-blur-sm shadow-glass scale-[1.02]"
-            : "border-border/50 bg-background-paper/50 backdrop-blur-sm hover:border-primary/50 hover:shadow-glass"
-        }`}
-        initial={{ scale: 0.95, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        whileHover={{ scale: busy ? 1 : 1.01 }}
-        style={{ backdropFilter: "blur(20px)" }}
-      >
-        <input {...getInputProps()} />
+      <main id="main-content" className="flex-1 flex flex-col justify-center">
         <motion.div
-          animate={isDragging || isDragActive ? { scale: 1.1, y: -10 } : { scale: 1, y: 0 }}
-          transition={{ type: "spring", stiffness: 400, damping: 17 }}
-          className="mx-auto mb-6 w-20 h-20 md:w-24 md:h-24 p-5 bg-background rounded-2xl border shadow-card"
-        >
-          <UploadCloud className="w-full h-full text-primary group-hover:text-accent transition-colors" />
-        </motion.div>
-        <AnimatePresence mode="wait">
-          {isDragActive || isDragging ? (
-            <motion.p
-              key="drag"
-              className="text-2xl font-bold text-accent mb-4"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-            >
-              Drop your images here...
-            </motion.p>
-          ) : (
-            <motion.div
-              key="idle"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-            >
-              <p className="text-2xl md:text-3xl font-bold text-foreground mb-4">
-                Drag & drop up to 5 images
-              </p>
-              <p className="text-foreground-secondary mb-8 text-lg">
-                or click to browse. JPEG, PNG, WebP, HEIC (max 10MB each)
-              </p>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </motion.div>
-
-      {hasPrevious && status === "idle" && files.length === 0 && (
-        <motion.div
-          className="mt-12 text-center"
-          initial={{ opacity: 0, y: 20 }}
+          className="text-center mb-10"
+          initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
+          transition={{ duration: 0.3 }}
         >
-          <motion.button
-            type="button"
-            className="btn inline-flex items-center gap-2 px-8 py-4 bg-accent text-accent-foreground rounded-2xl text-lg font-medium shadow-card hover:shadow-glass"
-            onClick={() => {
-              const saved = JSON.parse(localStorage.getItem("photoResults"));
-              navigate(`/results/${saved.sessionId}`);
-            }}
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-          >
-            <Eye className="w-5 h-5" />
-            View Previous Results
-          </motion.button>
+          <p className="text-sm font-medium text-foreground-secondary mb-3 tracking-wide">
+            Privacy-first image tools
+          </p>
+          <h1 className="font-display text-5xl md:text-6xl lg:text-7xl font-bold text-primary mb-4">
+            Photo Metadata Remover
+          </h1>
+          <p className="text-lg md:text-xl text-foreground-secondary max-w-2xl mx-auto">
+            Strip EXIF metadata and compress photos so they are easier and safer to share. Up to 5
+            images, available for {expirationTime} minutes.
+          </p>
         </motion.div>
-      )}
 
-      {files.length > 0 && (
+        <div className="flex flex-col lg:flex-row gap-6 justify-center mb-8 max-w-2xl mx-auto w-full">
+          <div className="flex-1">
+            <div
+              role="radiogroup"
+              aria-label="Resize preset"
+              className="flex gap-1 flex-wrap"
+            >
+              <span className="w-full block text-sm font-medium mb-2 text-foreground-secondary">
+                Preset
+              </span>
+              {PRESETS.map((p) => (
+                <button
+                  key={p.id}
+                  type="button"
+                  role="radio"
+                  aria-checked={preset === p.id}
+                  disabled={busy}
+                  className={`focus-ring px-4 py-3 rounded-control border-2 transition-colors btn font-medium text-sm whitespace-nowrap disabled:opacity-50 ${
+                    preset === p.id
+                      ? "bg-primary text-primary-foreground border-primary shadow-card"
+                      : "border-border hover:border-primary/50 text-foreground-secondary hover:text-foreground"
+                  }`}
+                  onClick={() => setPreset(p.id)}
+                >
+                  {p.label}
+                </button>
+              ))}
+            </div>
+            {selectedPreset && (
+              <p className="mt-2 text-xs text-foreground-muted">{selectedPreset.hint}</p>
+            )}
+          </div>
+          <div className="flex-1">
+            <div role="radiogroup" aria-label="Output format" className="flex gap-1 flex-wrap">
+              <span className="w-full block text-sm font-medium mb-2 text-foreground-secondary">
+                Format
+              </span>
+              {FORMATS.map((f) => (
+                <button
+                  key={f.id}
+                  type="button"
+                  role="radio"
+                  aria-checked={format === f.id}
+                  disabled={busy}
+                  className={`focus-ring px-4 py-3 rounded-control border-2 transition-colors btn font-medium text-sm whitespace-nowrap disabled:opacity-50 ${
+                    format === f.id
+                      ? "bg-primary text-primary-foreground border-primary shadow-card"
+                      : "border-border hover:border-primary/50 text-foreground-secondary hover:text-foreground"
+                  }`}
+                  onClick={() => setFormat(f.id)}
+                >
+                  {f.label}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+
         <motion.div
-          className="mt-12 max-w-4xl mx-auto w-full"
+          {...rootProps}
+          role="button"
+          tabIndex={0}
+          aria-label="Upload images. Drag and drop up to 5 images, or click to browse."
+          aria-disabled={busy}
+          className={`relative group border-2 border-dashed rounded-card p-12 md:p-16 text-center transition-colors focus-ring ${
+            busy ? "cursor-not-allowed opacity-70" : "cursor-pointer"
+          } ${
+            isDragging || isDragActive
+              ? "border-accent bg-accent/5"
+              : "border-border/60 bg-background-paper hover:border-primary/50"
+          }`}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
+          transition={{ duration: 0.25 }}
         >
-          <h2 className="text-2xl font-bold text-foreground mb-6 text-center">
-            Selected Files ({files.length}/5)
-          </h2>
-          <div className="stagger grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 mb-8">
-            {files.map((f, i) => {
-              const fileStatus = fileStatuses.find((fs) => fs.name === f.name)?.status || "selected";
-              const getStatusIcon = () => {
-                switch (fileStatus) {
-                  case "uploading":
-                    return <Loader className="w-6 h-6 text-primary animate-spin" />;
-                  case "processing":
-                    return <Clock className="w-6 h-6 text-accent animate-spin" />;
-                  case "completed":
-                    return <CheckCircle className="w-6 h-6 text-success" />;
-                  case "error":
-                    return <XCircle className="w-6 h-6 text-error" />;
-                  default:
-                    return <ImageIcon className="w-6 h-6 text-primary" />;
-                }
-              };
-              const getStatusColor = () => {
-                switch (fileStatus) {
-                  case "uploading":
-                    return "border-primary/50 bg-primary/5";
-                  case "processing":
-                    return "border-accent/50 bg-accent/5";
-                  case "completed":
-                    return "border-success/50 bg-success/5";
-                  case "error":
-                    return "border-error/50 bg-error/5";
-                  default:
-                    return "border-border hover:border-primary bg-background-paper";
-                }
-              };
-              return (
-                <motion.div
-                  key={`${f.name}-${i}`}
-                  className={`group relative p-4 rounded-2xl border hover:shadow-card transition-all duration-200 overflow-hidden ${getStatusColor()}`}
-                  whileHover={{ y: -4 }}
-                >
-                  <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center mb-2">
-                    {getStatusIcon()}
-                  </div>
-                  <p className="font-medium truncate">{f.name}</p>
-                  <p className="text-foreground-secondary text-sm">{Math.round(f.size / 1024)} KB</p>
-                  <p className="text-xs capitalize text-foreground-muted mt-1">{fileStatus}</p>
-                </motion.div>
-              );
-            })}
+          <input {...getInputProps()} aria-label="Choose image files" />
+          <div className="mx-auto mb-6 w-20 h-20 md:w-24 md:h-24 p-5 bg-background rounded-card border border-border shadow-card">
+            <UploadCloud className="w-full h-full text-primary group-hover:text-accent transition-colors" aria-hidden="true" />
           </div>
-
-          {status === "ready" && (
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-              <motion.button
-                type="button"
-                className="btn inline-flex items-center gap-2 px-8 py-4 bg-primary text-primary-foreground rounded-2xl text-lg font-semibold shadow-card hover:shadow-glass"
-                onClick={() => handleUpload(files)}
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
+          <AnimatePresence mode="wait">
+            {isDragActive || isDragging ? (
+              <motion.p
+                key="drag"
+                className="text-2xl font-bold text-accent mb-4"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
               >
-                <ShieldCheck className="w-5 h-5" />
-                Remove metadata and compress
-              </motion.button>
-              <motion.button
-                type="button"
-                className="btn inline-flex items-center gap-2 px-6 py-4 border border-border rounded-2xl text-foreground-secondary hover:text-foreground"
-                onClick={clearSelection}
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
+                Drop your images here
+              </motion.p>
+            ) : (
+              <motion.div
+                key="idle"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
               >
-                <X className="w-5 h-5" />
-                Clear selection
-              </motion.button>
-            </div>
-          )}
+                <p className="text-2xl md:text-3xl font-semibold text-foreground mb-3">
+                  Drag and drop up to 5 images
+                </p>
+                <p className="text-foreground-secondary mb-2 text-lg">
+                  or click to browse. JPEG, PNG, WebP, HEIC (max 10MB each)
+                </p>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </motion.div>
-      )}
 
-      {status === "uploading" && (
-        <motion.div
-          className="mt-12 max-w-md mx-auto glass p-6 sm:p-8 rounded-3xl shadow-glass"
-          initial={{ scale: 0.95, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-        >
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-10 h-10 bg-primary/20 rounded-xl flex items-center justify-center">
-              <UploadCloud className="w-5 h-5 text-primary animate-pulse" />
-            </div>
-            <h3 className="text-xl font-bold text-foreground">Uploading Files</h3>
-          </div>
-          <p className="text-sm text-foreground-secondary mb-4 text-center">
-            Uploading {files.length} image{files.length !== 1 ? "s" : ""}...
-          </p>
-          <div className="w-full bg-border rounded-full h-3 mb-2 overflow-hidden">
-            <motion.div
-              className="bg-gradient-to-r from-primary to-accent h-3 rounded-full shimmer"
-              initial={{ width: 0 }}
-              animate={{ width: `${uploadProgress}%` }}
-              transition={{ duration: 0.5, ease: "easeOut" }}
-            />
-          </div>
-          <p className="text-center font-mono text-foreground-secondary">
-            {uploadProgress.toFixed(0)}%
-          </p>
-        </motion.div>
-      )}
-
-      {status === "processing" && (
-        <motion.div
-          className="mt-12 max-w-md mx-auto glass p-6 sm:p-8 rounded-3xl shadow-glass"
-          initial={{ scale: 0.95, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-        >
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-10 h-10 bg-accent/20 rounded-xl flex items-center justify-center animate-spin">
-              <Clock className="w-5 h-5 text-accent" />
-            </div>
-            <h3 className="text-xl font-bold text-foreground">Processing Images</h3>
-          </div>
-          <p className="text-sm text-foreground-secondary mb-4 text-center">
-            Removing metadata from {progress.total} image{progress.total !== 1 ? "s" : ""}...
-          </p>
-          <p className="text-lg mb-4 text-center">
-            {progress.processed}/{progress.total} completed
-          </p>
-          <div className="w-full bg-border rounded-full h-3 mb-2 overflow-hidden">
-            <motion.div
-              className="bg-accent h-3 rounded-full shimmer"
-              animate={{
-                width: progress.total > 0 ? `${(progress.processed / progress.total) * 100}%` : 0
+        {hasPrevious && status === "idle" && files.length === 0 && (
+          <div className="mt-10 text-center">
+            <button
+              type="button"
+              className="btn focus-ring inline-flex items-center gap-2 px-8 py-4 bg-accent text-accent-foreground rounded-card text-lg font-medium shadow-card"
+              onClick={() => {
+                const saved = JSON.parse(localStorage.getItem("photoResults"));
+                navigate(`/results/${saved.sessionId}`);
               }}
-              transition={{ duration: 0.8 }}
-            />
+            >
+              <Eye className="w-5 h-5" aria-hidden="true" />
+              View previous results
+            </button>
           </div>
-        </motion.div>
-      )}
+        )}
 
-      {status === "completed" && (
-        <motion.div
-          ref={(el) => {
-            if (el) el.scrollIntoView({ behavior: "smooth", block: "center" });
-          }}
-          className="mt-12 max-w-md mx-auto glass p-8 rounded-3xl shadow-glass text-center"
-          initial={{ scale: 0.9, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-        >
-          <div className="w-20 h-20 bg-success/20 rounded-2xl flex items-center justify-center mx-auto mb-6">
-            <Download className="w-10 h-10 text-success" />
+        {files.length > 0 && (
+          <div className="mt-10 max-w-4xl mx-auto w-full">
+            <h2 className="text-2xl font-semibold text-foreground mb-6 text-center">
+              Selected files ({files.length}/5)
+            </h2>
+            <div className="stagger grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 mb-8">
+              {files.map((f, i) => {
+                const fileStatus = fileStatuses.find((fs) => fs.name === f.name)?.status || "selected";
+                const getStatusIcon = () => {
+                  switch (fileStatus) {
+                    case "uploading":
+                      return <Loader className="w-6 h-6 text-primary animate-spin" aria-hidden="true" />;
+                    case "processing":
+                      return <Clock className="w-6 h-6 text-accent" aria-hidden="true" />;
+                    case "completed":
+                      return <CheckCircle className="w-6 h-6 text-success" aria-hidden="true" />;
+                    case "error":
+                      return <XCircle className="w-6 h-6 text-error" aria-hidden="true" />;
+                    default:
+                      return <ImageIcon className="w-6 h-6 text-primary" aria-hidden="true" />;
+                  }
+                };
+                const getStatusColor = () => {
+                  switch (fileStatus) {
+                    case "uploading":
+                      return "border-primary/50 bg-primary/5";
+                    case "processing":
+                      return "border-accent/50 bg-accent/5";
+                    case "completed":
+                      return "border-success/50 bg-success/5";
+                    case "error":
+                      return "border-error/50 bg-error/5";
+                    default:
+                      return "border-border hover:border-primary bg-background-paper";
+                  }
+                };
+                return (
+                  <div
+                    key={`${f.name}-${i}`}
+                    className={`relative p-4 rounded-card border transition-colors overflow-hidden ${getStatusColor()}`}
+                  >
+                    <div className="w-12 h-12 bg-primary/10 rounded-control flex items-center justify-center mb-2">
+                      {getStatusIcon()}
+                    </div>
+                    <p className="font-medium truncate">{f.name}</p>
+                    <p className="text-foreground-secondary text-sm">{Math.round(f.size / 1024)} KB</p>
+                    <p className="text-xs capitalize text-foreground-muted mt-1">{fileStatus}</p>
+                  </div>
+                );
+              })}
+            </div>
+
+            {status === "ready" && (
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+                <button
+                  type="button"
+                  className="btn focus-ring inline-flex items-center gap-2 px-8 py-4 bg-primary text-primary-foreground rounded-card text-lg font-semibold shadow-card"
+                  onClick={() => handleUpload(files)}
+                >
+                  <ShieldCheck className="w-5 h-5" aria-hidden="true" />
+                  Remove metadata and compress
+                </button>
+                <button
+                  type="button"
+                  className="btn focus-ring inline-flex items-center gap-2 px-6 py-4 border border-border rounded-card text-foreground-secondary hover:text-foreground"
+                  onClick={clearSelection}
+                >
+                  <X className="w-5 h-5" aria-hidden="true" />
+                  Clear selection
+                </button>
+              </div>
+            )}
           </div>
-          <h3 className="text-2xl font-bold text-success mb-4">Processing Complete!</h3>
-          <p className="text-foreground-secondary mb-8">
-            Metadata removed. Files are ready to download and share.
-          </p>
-          <motion.button
-            type="button"
-            className="btn flex items-center justify-center gap-2 p-4 bg-primary text-primary-foreground rounded-2xl text-lg font-semibold shadow-card hover:shadow-glass w-full"
-            onClick={() => navigate(`/results/${sessionId}`)}
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
+        )}
+
+        {status === "uploading" && (
+          <div className="mt-10 max-w-md mx-auto glass p-6 sm:p-8 rounded-card shadow-glass" role="status" aria-live="polite">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 bg-primary/20 rounded-control flex items-center justify-center">
+                <UploadCloud className="w-5 h-5 text-primary" aria-hidden="true" />
+              </div>
+              <h3 className="text-xl font-semibold text-foreground">Uploading</h3>
+            </div>
+            <p className="text-sm text-foreground-secondary mb-4 text-center">
+              Sending {files.length} image{files.length !== 1 ? "s" : ""} to the server...
+            </p>
+            <div className="w-full bg-border rounded-full h-3 mb-2 overflow-hidden">
+              <div
+                className="bg-primary h-3 rounded-full transition-[width] duration-300"
+                style={{ width: `${uploadProgress}%` }}
+              />
+            </div>
+            <p className="text-center font-mono text-foreground-secondary">{uploadProgress.toFixed(0)}%</p>
+          </div>
+        )}
+
+        {status === "processing" && (
+          <div className="mt-10 max-w-md mx-auto glass p-6 sm:p-8 rounded-card shadow-glass" role="status" aria-live="polite">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 bg-accent/20 rounded-control flex items-center justify-center">
+                <Clock className="w-5 h-5 text-accent" aria-hidden="true" />
+              </div>
+              <h3 className="text-xl font-semibold text-foreground">Confirming results</h3>
+            </div>
+            <p className="text-sm text-foreground-secondary mb-4 text-center">
+              Checking that metadata was removed
+              {progress.total > 0 ? ` from ${progress.total} image${progress.total !== 1 ? "s" : ""}` : ""}...
+            </p>
+            <p className="text-lg mb-4 text-center">
+              {progress.processed}/{progress.total || files.length} ready
+            </p>
+            <div className="w-full bg-border rounded-full h-3 mb-2 overflow-hidden">
+              <div
+                className="bg-accent h-3 rounded-full transition-[width] duration-300"
+                style={{
+                  width:
+                    progress.total > 0
+                      ? `${(progress.processed / progress.total) * 100}%`
+                      : "0%"
+                }}
+              />
+            </div>
+          </div>
+        )}
+
+        {status === "completed" && (
+          <div
+            ref={(el) => {
+              if (el) el.scrollIntoView({ behavior: "smooth", block: "center" });
+            }}
+            className="mt-10 max-w-md mx-auto glass p-8 rounded-card shadow-glass text-center"
           >
-            <Eye className="w-5 h-5" />
-            View Results
-          </motion.button>
-        </motion.div>
-      )}
-
-      {status === "error" && (
-        <motion.div
-          className="mt-12 max-w-md mx-auto glass p-8 rounded-3xl shadow-glass text-center"
-          initial={{ scale: 0.95, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-        >
-          <div className="w-20 h-20 bg-error/20 rounded-2xl flex items-center justify-center mx-auto mb-6">
-            <XCircle className="w-10 h-10 text-error" />
+            <div className="w-20 h-20 bg-success/20 rounded-card flex items-center justify-center mx-auto mb-6">
+              <Download className="w-10 h-10 text-success" aria-hidden="true" />
+            </div>
+            <h3 className="text-2xl font-semibold text-success mb-4">Processing complete</h3>
+            <p className="text-foreground-secondary mb-8">
+              Metadata removed. Files are ready to download and share.
+            </p>
+            <button
+              type="button"
+              className="btn focus-ring flex items-center justify-center gap-2 p-4 bg-primary text-primary-foreground rounded-card text-lg font-semibold shadow-card w-full"
+              onClick={() => navigate(`/results/${sessionId}`)}
+            >
+              <Eye className="w-5 h-5" aria-hidden="true" />
+              View results
+            </button>
           </div>
-          <h3 className="text-2xl font-bold text-error mb-4">Upload Failed</h3>
-          <p className="text-foreground-secondary mb-8">Please try again.</p>
-          <motion.button
-            type="button"
-            className="btn w-full bg-foreground text-background py-4 px-8 rounded-2xl text-lg font-semibold hover:shadow-glass"
-            onClick={clearSelection}
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-          >
-            Try Again
-          </motion.button>
-        </motion.div>
-      )}
+        )}
 
-      <footer className="mt-24 text-center text-foreground-secondary text-sm pt-12 border-t border-border/50">
-        <p>
-          Created by{" "}
-          <Link to="https://alfred-delacosta.github.io" className="text-primary hover:underline">
-            Alfred De La Costa
-          </Link>{" "}
-          with help from{" "}
-          <Link to="https://x.ai/" className="text-primary hover:underline">
-            Grok
-          </Link>
-        </p>
-      </footer>
+        {status === "error" && (
+          <div className="mt-10 max-w-md mx-auto glass p-8 rounded-card shadow-glass text-center" role="alert">
+            <div className="w-20 h-20 bg-error/20 rounded-card flex items-center justify-center mx-auto mb-6">
+              <XCircle className="w-10 h-10 text-error" aria-hidden="true" />
+            </div>
+            <h3 className="text-2xl font-semibold text-error mb-4">Upload failed</h3>
+            <p className="text-foreground-secondary mb-8">Please try again.</p>
+            <button
+              type="button"
+              className="btn focus-ring w-full bg-foreground text-background py-4 px-8 rounded-card text-lg font-semibold"
+              onClick={clearSelection}
+            >
+              Try again
+            </button>
+          </div>
+        )}
+      </main>
+
+      <SiteFooter />
     </div>
   );
 };

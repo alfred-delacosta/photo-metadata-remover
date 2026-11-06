@@ -2,9 +2,8 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Modern Design System - Premium 2026 Aesthetic with Light/Dark Support */
+/* Trustworthy dual-theme tokens. Light white + #1976d2 blue retained. */
 :root {
-  /* Light Mode */
   --background: 255 255 255;
   --background-paper: 255 255 255;
   --background-elevated: 243 244 246;
@@ -19,20 +18,28 @@
   --success: 22 163 74;
   --success-foreground: 255 255 255;
   --error: 239 68 68;
+
+  --dur-fast: 150ms;
+  --dur-base: 220ms;
+  --dur-slow: 300ms;
+  --ease-out: cubic-bezier(0.2, 0, 0, 1);
+  --ease-in: cubic-bezier(0.3, 0, 0.8, 0.15);
+  --radius-control: 4px;
+  --radius-card: 8px;
 }
 
 .dark {
-  /* Dark Mode */
   --background: 10 10 10;
   --background-paper: 17 17 17;
   --background-elevated: 26 26 26;
   --foreground: 250 250 250;
   --foreground-secondary: 161 161 170;
   --foreground-muted: 113 113 122;
-  --primary: 99 102 241;
-  --primary-foreground: 255 255 255;
-  --accent: 34 211 238;
-  --accent-foreground: 10 10 10;
+  /* Same blue family as light mode (not indigo) */
+  --primary: 66 165 245;
+  --primary-foreground: 10 10 10;
+  --accent: 8 145 178;
+  --accent-foreground: 255 255 255;
   --border: 39 39 42;
   --success: 34 197 94;
   --success-foreground: 10 10 10;
@@ -40,48 +47,71 @@
 }
 
 html {
-  height: 100vh;
+  height: 100%;
+  font-size: 16px;
+}
+
+body {
+  min-height: 100%;
+  min-height: 100dvh;
+  font-family: "Source Sans 3", system-ui, sans-serif;
+  line-height: 1.5;
 }
 
 #root {
-  height: 100vh;
-  height: calc(var(--vh, 1vh) * 100);
+  min-height: 100%;
+  min-height: 100dvh;
+  min-height: calc(var(--vh, 1vh) * 100);
 }
 
-/* Glassmorphic effect for modern cards and modals */
+.font-display {
+  font-family: "Source Serif 4", Georgia, "Times New Roman", serif;
+  line-height: 1.15;
+}
+
 .glass {
-  background: rgba(var(--background-paper), 0.85);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(var(--border), 0.6);
+  background: rgba(var(--background-paper), 0.92);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(var(--border), 0.7);
 }
 
-/* Smooth focus states */
 .focus-ring {
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: box-shadow var(--dur-fast) var(--ease-out);
 }
 
 .focus-ring:focus {
   outline: none;
-  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.3);
 }
 
-/* Modern button styles */
+.focus-ring:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px rgb(var(--background)), 0 0 0 4px rgb(var(--primary) / 0.7);
+}
+
 .btn {
-  transition: all 0.2s cubic-bezier(0.4, 0.0, 0.2, 1);
+  transition:
+    transform var(--dur-fast) var(--ease-out),
+    box-shadow var(--dur-fast) var(--ease-out),
+    background-color var(--dur-fast) var(--ease-out);
   font-weight: 500;
   letter-spacing: -0.01em;
+  border-radius: var(--radius-control);
 }
 
 .btn:hover {
   transform: translateY(-1px);
-  box-shadow: 0 10px 15px -3px rgb(var(--foreground) / 0.1);
+  box-shadow: 0 8px 16px -4px rgb(var(--foreground) / 0.08);
 }
 
-/* Staggered animation utility */
+.btn:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px rgb(var(--background)), 0 0 0 4px rgb(var(--primary) / 0.7);
+}
+
 .stagger > * {
   opacity: 0;
-  animation: slideUp 0.6s cubic-bezier(0.23, 1.0, 0.32, 1) forwards;
+  animation: slideUp var(--dur-slow) var(--ease-out) forwards;
 }
 
 .stagger > *:nth-child(1) { animation-delay: 0.05s; }
@@ -89,9 +119,13 @@ html {
 .stagger > *:nth-child(3) { animation-delay: 0.15s; }
 .stagger > *:nth-child(4) { animation-delay: 0.2s; }
 
-/* Shimmer loading effect */
 .shimmer {
-  background: linear-gradient(90deg, rgb(var(--border)) 25%, rgb(var(--background-elevated)) 50%, rgb(var(--border)) 75%);
+  background: linear-gradient(
+    90deg,
+    rgb(var(--border)) 25%,
+    rgb(var(--background-elevated)) 50%,
+    rgb(var(--border)) 75%
+  );
   background-size: 200% 100%;
   animation: shimmer 1.5s infinite;
 }
@@ -99,4 +133,31 @@ html {
 @keyframes shimmer {
   0% { background-position: 200% 0; }
   100% { background-position: -200% 0; }
+}
+
+@keyframes slideUp {
+  0% {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .stagger > * {
+    opacity: 1;
+    animation: none;
+  }
 }
