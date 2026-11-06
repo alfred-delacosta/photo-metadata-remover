@@ -314,9 +314,9 @@ const FileUpload = ({ isDark, onToggleTheme }) => {
           {...rootProps}
           role="button"
           tabIndex={0}
-          aria-label="Upload images. Drag and drop up to 5 images, or click to browse."
+          aria-label="Upload images. Tap to choose photos, or drag and drop up to 5 images."
           aria-disabled={busy}
-          className={`relative group border-2 border-dashed rounded-card p-12 md:p-16 text-center transition-colors focus-ring ${
+          className={`relative group border-2 border-dashed rounded-card p-10 sm:p-12 md:p-16 text-center transition-colors focus-ring ${
             busy ? "cursor-not-allowed opacity-70" : "cursor-pointer"
           } ${
             isDragging || isDragActive
@@ -350,10 +350,12 @@ const FileUpload = ({ isDark, onToggleTheme }) => {
                 exit={{ opacity: 0 }}
               >
                 <p className="text-2xl md:text-3xl font-semibold text-foreground mb-3">
-                  Drag and drop up to 5 images
+                  <span className="md:hidden">Tap to choose photos</span>
+                  <span className="hidden md:inline">Drag and drop up to 5 images</span>
                 </p>
-                <p className="text-foreground-secondary mb-2 text-lg">
-                  or click to browse. JPEG, PNG, WebP, HEIC (max 10MB each)
+                <p className="text-foreground-secondary mb-2 text-base sm:text-lg">
+                  <span className="md:hidden">Up to 5 images. JPEG, PNG, WebP, HEIC (max 10MB each)</span>
+                  <span className="hidden md:inline">or click to browse. JPEG, PNG, WebP, HEIC (max 10MB each)</span>
                 </p>
               </motion.div>
             )}

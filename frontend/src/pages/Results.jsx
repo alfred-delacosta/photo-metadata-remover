@@ -138,12 +138,12 @@ const Results = ({ isDark, onToggleTheme }) => {
           </p>
         </motion.div>
 
-        <div className="columns-1 sm:columns-2 lg:columns-3 xl:columns-4 gap-10 max-w-7xl mx-auto mb-16 px-4">
+        <div className="columns-1 sm:columns-2 lg:columns-3 xl:columns-4 gap-4 sm:gap-6 lg:gap-10 max-w-7xl mx-auto mb-16">
           <AnimatePresence>
             {files.map((file, i) => (
               <motion.div
                 key={`${file.filename || file.origName}-${i}`}
-                className="mb-10 break-inside-avoid"
+                className="mb-4 sm:mb-6 lg:mb-10 break-inside-avoid"
                 initial={{ opacity: 0, y: 24 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0 }}
