@@ -293,7 +293,10 @@ app.get('/api/image/:filename', async (req, res) => {
     await cleanupToken(token);
     return res.status(403).json({ error: 'URL has expired' });
   }
+  const downloadName = path.basename(fileInfo.origName || fileInfo.filename || 'image');
+  const safeName = downloadName.replace(/[^\w.\-()+ ]+/g, '_') || 'image';
   res.set('Cache-Control', 'private, max-age=300'); // Cache for 5 minutes, matching link expiration
+  res.set('Content-Disposition', `attachment; filename="${safeName}"`);
   res.sendFile(path.resolve(fileInfo.filePath), err => {
     if (err) {
       console.error('File serving error:', err);
@@ -375,12 +378,24 @@ app.get('/api/expirationTime', async (req, res) => {
 if (process.env.ENVIRONMENT === "production") {
   const __filename = fileURLToPath(import.meta.url);
   const __dirname = path.dirname(__filename);
+  const distDir = path.join(__dirname, "../../frontend/dist");
 
-  // To make the node server serve the contents of the dist folder in the frontend/dist
-  app.use(express.static(path.join(__dirname, "../../frontend/dist")));
+  // Serve built frontend; keep the service worker fresh for PWA updates
+  app.use(express.static(distDir, {
+    setHeaders(res, filePath) {
+      const base = path.basename(filePath);
+      if (base === 'sw.js' || base.startsWith('workbox-') || base === 'site.webmanifest') {
+        res.setHeader('Cache-Control', 'no-cache');
+      }
+    }
+  }));
 
-  app.all("/*splat/", (req, res) => {
-    res.sendFile(path.join(__dirname, "../../frontend", "dist", "index.html"));
+  // SPA fallback for client routes (home-screen launches, refreshes on /results, /viewImage)
+  app.get('/{*splat}', (req, res, next) => {
+    if (req.path.startsWith('/api/')) return next();
+    res.sendFile(path.join(distDir, 'index.html'), (err) => {
+      if (err) next(err);
+    });
   });
 }
 

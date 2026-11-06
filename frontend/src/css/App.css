@@ -99,9 +99,42 @@ body {
   border-radius: var(--radius-control);
 }
 
-.btn:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 8px 16px -4px rgb(var(--foreground) / 0.08);
+@media (hover: hover) and (pointer: fine) {
+  .btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 8px 16px -4px rgb(var(--foreground) / 0.08);
+  }
+}
+
+/* Fixed chrome insets for notched iPhones / home indicator */
+.safe-fixed-top-left {
+  top: max(1.5rem, env(safe-area-inset-top, 0px));
+  left: max(1.5rem, env(safe-area-inset-left, 0px));
+}
+
+.safe-fixed-top-right {
+  top: max(1.5rem, env(safe-area-inset-top, 0px));
+  right: max(1.5rem, env(safe-area-inset-right, 0px));
+}
+
+.safe-fixed-bottom-left {
+  bottom: max(2rem, env(safe-area-inset-bottom, 0px));
+  left: max(1.5rem, env(safe-area-inset-left, 0px));
+}
+
+.safe-fixed-bottom-right {
+  bottom: max(2rem, env(safe-area-inset-bottom, 0px));
+  right: max(2rem, env(safe-area-inset-right, 0px));
+}
+
+.safe-fixed-bottom-center {
+  bottom: max(2rem, env(safe-area-inset-bottom, 0px));
+}
+
+.safe-panel-pad {
+  padding-bottom: max(2rem, env(safe-area-inset-bottom, 0px));
+  padding-left: max(1.5rem, env(safe-area-inset-left, 0px));
+  padding-right: max(1.5rem, env(safe-area-inset-right, 0px));
 }
 
 .btn:focus-visible {
