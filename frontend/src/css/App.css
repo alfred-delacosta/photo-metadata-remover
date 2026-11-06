@@ -13,9 +13,11 @@
   --foreground-muted: 156 163 175;
   --primary: 25 118 210;
   --primary-foreground: 255 255 255;
-  --accent: 34 211 238;
+  --accent: 8 145 178;
+  --accent-foreground: 255 255 255;
   --border: 229 231 235;
-  --success: 34 197 94;
+  --success: 22 163 74;
+  --success-foreground: 255 255 255;
   --error: 239 68 68;
 }
 
@@ -30,8 +32,10 @@
   --primary: 99 102 241;
   --primary-foreground: 255 255 255;
   --accent: 34 211 238;
+  --accent-foreground: 10 10 10;
   --border: 39 39 42;
   --success: 34 197 94;
+  --success-foreground: 10 10 10;
   --error: 239 68 68;
 }
 

@@ -8,10 +8,10 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        sans: ['Inter', 'system_ui', 'sans-serif'],
+        sans: ['Inter', 'system-ui', 'sans-serif'],
       },
       colors: {
-        // Premium 2026 palette with CSS variables for light/dark support
+        // Palette via CSS variables for light/dark support
         background: 'rgb(var(--background) / <alpha-value>)',
         'background-paper': 'rgb(var(--background-paper) / <alpha-value>)',
         'background-elevated': 'rgb(var(--background-elevated) / <alpha-value>)',
@@ -21,8 +21,10 @@ export default {
         primary: 'rgb(var(--primary) / <alpha-value>)',
         'primary-foreground': 'rgb(var(--primary-foreground) / <alpha-value>)',
         accent: 'rgb(var(--accent) / <alpha-value>)',
+        'accent-foreground': 'rgb(var(--accent-foreground) / <alpha-value>)',
         border: 'rgb(var(--border) / <alpha-value>)',
         success: 'rgb(var(--success) / <alpha-value>)',
+        'success-foreground': 'rgb(var(--success-foreground) / <alpha-value>)',
         error: 'rgb(var(--error) / <alpha-value>)',
       },
       boxShadow: {
