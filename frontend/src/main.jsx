@@ -17,6 +17,11 @@ createRoot(document.getElementById("root")).render(
       <App />
       <Toaster
         position="top-center"
+        containerStyle={{
+          top: "max(1rem, calc(var(--safe-t) + 0.5rem))",
+          right: "max(1rem, calc(var(--safe-r) + 0.5rem))",
+          left: "max(1rem, calc(var(--safe-l) + 0.5rem))",
+        }}
         toastOptions={{
           duration: 4000,
           style: {
