@@ -45,7 +45,7 @@ const Results = ({ isDark, onToggleTheme }) => {
 
   if (loading) {
     return (
-      <div className="min-h-screen min-h-[100dvh] py-20 px-4 flex flex-col items-center justify-center">
+      <div className="safe-page safe-page-roomy min-h-screen min-h-[100dvh] flex flex-col items-center justify-center">
         <BrandMark />
         <ThemeToggle isDark={isDark} onToggleTheme={onToggleTheme} />
         <div
@@ -61,7 +61,7 @@ const Results = ({ isDark, onToggleTheme }) => {
 
   if (error) {
     return (
-      <div className="min-h-screen min-h-[100dvh] py-20 px-4 flex flex-col items-center justify-center text-center max-w-md mx-auto">
+      <div className="safe-page safe-page-roomy min-h-screen min-h-[100dvh] flex flex-col items-center justify-center text-center max-w-md mx-auto">
         <BrandMark />
         <ThemeToggle isDark={isDark} onToggleTheme={onToggleTheme} />
         <div className="w-28 h-28 bg-error/10 rounded-card flex items-center justify-center mx-auto mb-8 border border-error/20">
@@ -88,7 +88,7 @@ const Results = ({ isDark, onToggleTheme }) => {
 
   if (files.length === 0) {
     return (
-      <div className="min-h-screen min-h-[100dvh] py-20 px-4 flex flex-col items-center justify-center text-center max-w-md mx-auto">
+      <div className="safe-page safe-page-roomy min-h-screen min-h-[100dvh] flex flex-col items-center justify-center text-center max-w-md mx-auto">
         <BrandMark />
         <ThemeToggle isDark={isDark} onToggleTheme={onToggleTheme} />
         <div className="w-28 h-28 bg-background-elevated rounded-card flex items-center justify-center mx-auto mb-8 border border-border">
@@ -112,7 +112,7 @@ const Results = ({ isDark, onToggleTheme }) => {
   }
 
   return (
-    <div className="min-h-screen min-h-[100dvh] py-20 px-4 sm:px-6 lg:px-8 flex flex-col">
+    <div className="safe-page safe-page-roomy min-h-screen min-h-[100dvh] flex flex-col">
       <BrandMark />
       <ThemeToggle isDark={isDark} onToggleTheme={onToggleTheme} />
 

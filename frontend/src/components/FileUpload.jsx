@@ -230,29 +230,29 @@ const FileUpload = ({ isDark, onToggleTheme }) => {
   const rootProps = getRootProps();
 
   return (
-    <div className="min-h-screen min-h-[100dvh] flex flex-col py-8 px-4 sm:px-6 lg:px-8 max-w-6xl mx-auto">
+    <div className="safe-page min-h-screen min-h-[100dvh] flex flex-col max-w-6xl mx-auto">
       <ThemeToggle isDark={isDark} onToggleTheme={onToggleTheme} />
 
       <main id="main-content" className="flex-1 flex flex-col justify-center">
         <motion.div
-          className="text-center mb-10"
+          className="text-center mb-6 md:mb-10"
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3 }}
         >
-          <p className="text-sm font-medium text-foreground-secondary mb-3 tracking-wide">
+          <p className="text-sm font-medium text-foreground-secondary mb-2 md:mb-3 tracking-wide">
             Privacy-first image tools
           </p>
-          <h1 className="font-display text-5xl md:text-6xl lg:text-7xl font-bold text-primary mb-4">
+          <h1 className="font-display text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-primary mb-3 md:mb-4">
             Photo Metadata Remover
           </h1>
-          <p className="text-lg md:text-xl text-foreground-secondary max-w-2xl mx-auto">
+          <p className="text-base md:text-xl text-foreground-secondary max-w-2xl mx-auto">
             Strip EXIF metadata and compress photos so they are easier and safer to share. Up to 5
             images, available for {expirationTime} minutes.
           </p>
         </motion.div>
 
-        <div className="flex flex-col lg:flex-row gap-6 justify-center mb-8 max-w-2xl mx-auto w-full">
+        <div className="flex flex-col lg:flex-row gap-4 md:gap-6 justify-center mb-6 md:mb-8 max-w-2xl mx-auto w-full">
           <div className="flex-1">
             <div
               role="radiogroup"
@@ -316,7 +316,7 @@ const FileUpload = ({ isDark, onToggleTheme }) => {
           tabIndex={0}
           aria-label="Upload images. Tap to choose photos, or drag and drop up to 5 images."
           aria-disabled={busy}
-          className={`relative group border-2 border-dashed rounded-card p-10 sm:p-12 md:p-16 text-center transition-colors focus-ring ${
+          className={`relative group border-2 border-dashed rounded-card p-6 sm:p-12 md:p-16 text-center transition-colors focus-ring ${
             busy ? "cursor-not-allowed opacity-70" : "cursor-pointer"
           } ${
             isDragging || isDragActive
@@ -328,14 +328,14 @@ const FileUpload = ({ isDark, onToggleTheme }) => {
           transition={{ duration: 0.25 }}
         >
           <input {...getInputProps()} aria-label="Choose image files" />
-          <div className="mx-auto mb-6 w-20 h-20 md:w-24 md:h-24 p-5 bg-background rounded-card border border-border shadow-card">
+          <div className="mx-auto mb-3 md:mb-6 w-14 h-14 md:w-24 md:h-24 p-3 md:p-5 bg-background rounded-card border border-border shadow-card">
             <UploadCloud className="w-full h-full text-primary group-hover:text-accent transition-colors" aria-hidden="true" />
           </div>
           <AnimatePresence mode="wait">
             {isDragActive || isDragging ? (
               <motion.p
                 key="drag"
-                className="text-2xl font-bold text-accent mb-4"
+                className="text-lg md:text-2xl font-bold text-accent mb-2 md:mb-4"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
@@ -349,13 +349,13 @@ const FileUpload = ({ isDark, onToggleTheme }) => {
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
               >
-                <p className="text-2xl md:text-3xl font-semibold text-foreground mb-3">
-                  <span className="md:hidden">Tap to choose photos</span>
-                  <span className="hidden md:inline">Drag and drop up to 5 images</span>
+                <p className="text-lg sm:text-2xl md:text-3xl font-semibold text-foreground mb-1 md:mb-3">
+                  <span className="sm:hidden">Tap to choose photos</span>
+                  <span className="hidden sm:inline">Drag and drop up to 5 images</span>
                 </p>
-                <p className="text-foreground-secondary mb-2 text-base sm:text-lg">
-                  <span className="md:hidden">Up to 5 images. JPEG, PNG, WebP, HEIC (max 10MB each)</span>
-                  <span className="hidden md:inline">or click to browse. JPEG, PNG, WebP, HEIC (max 10MB each)</span>
+                <p className="text-foreground-secondary text-sm md:text-lg">
+                  <span className="sm:hidden">Up to 5 images. JPEG, PNG, WebP, HEIC (max 10MB each)</span>
+                  <span className="hidden sm:inline">or click to browse. JPEG, PNG, WebP, HEIC (max 10MB each)</span>
                 </p>
               </motion.div>
             )}

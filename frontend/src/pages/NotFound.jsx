@@ -11,7 +11,7 @@ import SiteFooter from "../components/SiteFooter";
  */
 const NotFound = ({ isDark, onToggleTheme }) => {
   return (
-    <div className="min-h-screen min-h-[100dvh] flex flex-col px-4">
+    <div className="safe-page safe-page-roomy min-h-screen min-h-[100dvh] flex flex-col">
       <BrandMark />
       <ThemeToggle isDark={isDark} onToggleTheme={onToggleTheme} />
 

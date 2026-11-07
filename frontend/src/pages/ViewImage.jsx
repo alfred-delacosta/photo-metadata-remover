@@ -163,7 +163,7 @@ const ViewImage = ({ isDark, onToggleTheme }) => {
 
   if (loading) {
     return (
-      <div className="min-h-screen min-h-[100dvh] flex flex-col items-center justify-center">
+      <div className="safe-page safe-page-roomy min-h-screen min-h-[100dvh] flex flex-col items-center justify-center">
         <BrandMark />
         <ThemeToggle isDark={isDark} onToggleTheme={onToggleTheme} />
         <div className="text-center">
@@ -180,7 +180,7 @@ const ViewImage = ({ isDark, onToggleTheme }) => {
 
   if (!imageUrl) {
     return (
-      <div className="min-h-screen min-h-[100dvh] flex flex-col px-4">
+      <div className="safe-page safe-page-roomy min-h-screen min-h-[100dvh] flex flex-col">
         <BrandMark />
         <ThemeToggle isDark={isDark} onToggleTheme={onToggleTheme} />
         <main className="flex-1 flex items-center justify-center">
@@ -245,7 +245,7 @@ const ViewImage = ({ isDark, onToggleTheme }) => {
         ref={toggleButtonRef}
         className={`fixed z-50 min-w-11 min-h-11 flex items-center justify-center bg-background-paper/90 backdrop-blur-sm rounded-card border border-border hover:border-primary/50 shadow-card focus-ring ${
           isDesktopPanel
-            ? "top-1/2 left-4 -translate-y-1/2 p-3"
+            ? "safe-fixed-mid-left -translate-y-1/2 p-3"
             : "safe-fixed-bottom-left p-3"
         }`}
         onClick={() => setSidebarOpen(!sidebarOpen)}
