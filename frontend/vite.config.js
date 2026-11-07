@@ -11,11 +11,15 @@ export default defineConfig({
     VitePWA({
       registerType: 'autoUpdate',
       includeAssets: [
+        'favicon.ico',
+        'favicon.svg',
         'favicon-16x16.png',
         'favicon-32x32.png',
         'apple-touch-icon.png',
         'android-chrome-192x192.png',
         'android-chrome-512x512.png',
+        'icons/maskable-192x192.png',
+        'icons/maskable-512x512.png',
       ],
       manifestFilename: 'site.webmanifest',
       manifest: {
@@ -43,7 +47,13 @@ export default defineConfig({
             purpose: 'any',
           },
           {
-            src: '/android-chrome-512x512.png',
+            src: '/icons/maskable-192x192.png',
+            sizes: '192x192',
+            type: 'image/png',
+            purpose: 'maskable',
+          },
+          {
+            src: '/icons/maskable-512x512.png',
             sizes: '512x512',
             type: 'image/png',
             purpose: 'maskable',
