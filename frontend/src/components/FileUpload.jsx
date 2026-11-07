@@ -314,7 +314,7 @@ const FileUpload = ({ isDark, onToggleTheme }) => {
           {...rootProps}
           role="button"
           tabIndex={0}
-          aria-label="Upload images. Drag and drop up to 5 images, or click to browse."
+          aria-label="Upload images. Tap to choose photos, or drag and drop up to 5 images."
           aria-disabled={busy}
           className={`relative group border-2 border-dashed rounded-card p-6 sm:p-12 md:p-16 text-center transition-colors focus-ring ${
             busy ? "cursor-not-allowed opacity-70" : "cursor-pointer"

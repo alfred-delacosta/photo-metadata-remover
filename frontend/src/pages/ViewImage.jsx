@@ -10,6 +10,7 @@ import {
   Info
 } from "lucide-react";
 import api from "../lib/axios";
+import { downloadImage } from "../lib/downloadImage";
 import Countdown from "react-countdown";
 import toast from "react-hot-toast";
 import ThemeToggle from "../components/ThemeToggle";
@@ -49,9 +50,20 @@ const ViewImage = ({ isDark, onToggleTheme }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [imageScale, setImageScale] = useState(1);
   const [reprocessing, setReprocessing] = useState(false);
+  const [isDesktopPanel, setIsDesktopPanel] = useState(() =>
+    typeof window !== "undefined" ? window.matchMedia("(min-width: 1024px)").matches : true
+  );
   const imageRef = useRef(null);
   const sidebarRef = useRef(null);
   const toggleButtonRef = useRef(null);
+
+  useEffect(() => {
+    const mq = window.matchMedia("(min-width: 1024px)");
+    const onChange = (event) => setIsDesktopPanel(event.matches);
+    setIsDesktopPanel(mq.matches);
+    mq.addEventListener("change", onChange);
+    return () => mq.removeEventListener("change", onChange);
+  }, []);
 
   useEffect(() => {
     setActiveToken(initialToken);
@@ -129,10 +141,7 @@ const ViewImage = ({ isDark, onToggleTheme }) => {
       if ((e.key === "d" || e.key === "D") && imageUrl && !e.metaKey && !e.ctrlKey && !e.altKey) {
         const tag = e.target?.tagName;
         if (tag === "INPUT" || tag === "TEXTAREA" || e.target?.isContentEditable) return;
-        const link = document.createElement("a");
-        link.href = imageUrl;
-        link.download = imageName;
-        link.click();
+        downloadImage(imageUrl, imageName);
       }
     };
     window.addEventListener("keydown", handleKeyDown);
@@ -215,7 +224,7 @@ const ViewImage = ({ isDark, onToggleTheme }) => {
         />
       </motion.div>
 
-      <p className="fixed safe-fixed-bottom-left z-40 text-xs text-foreground-secondary bg-background-paper/90 border border-border rounded-control px-3 py-2 backdrop-blur-sm">
+      <p className="fixed safe-fixed-bottom-left z-40 text-xs text-foreground-secondary bg-background-paper/90 border border-border rounded-control px-3 py-2 backdrop-blur-sm hidden lg:block">
         Esc closes panel. D downloads.
       </p>
 
@@ -225,12 +234,7 @@ const ViewImage = ({ isDark, onToggleTheme }) => {
 
       <button
         className="fixed safe-fixed-bottom-right p-4 min-w-11 min-h-11 flex items-center justify-center bg-primary/95 backdrop-blur-sm rounded-card shadow-glass border border-primary text-primary-foreground hover:bg-primary z-50 focus-ring"
-        onClick={() => {
-          const link = document.createElement("a");
-          link.href = imageUrl;
-          link.download = imageName;
-          link.click();
-        }}
+        onClick={() => downloadImage(imageUrl, imageName)}
         aria-label={`Download ${imageName || "image"} (D)`}
         type="button"
       >
@@ -239,27 +243,46 @@ const ViewImage = ({ isDark, onToggleTheme }) => {
 
       <button
         ref={toggleButtonRef}
-        className="fixed safe-fixed-mid-left -translate-y-1/2 p-3 min-w-11 min-h-11 flex items-center justify-center bg-background-paper/90 backdrop-blur-sm rounded-card border border-border hover:border-primary/50 z-50 shadow-card focus-ring"
+        className={`fixed z-50 min-w-11 min-h-11 flex items-center justify-center bg-background-paper/90 backdrop-blur-sm rounded-card border border-border hover:border-primary/50 shadow-card focus-ring ${
+          isDesktopPanel
+            ? "safe-fixed-mid-left -translate-y-1/2 p-3"
+            : "safe-fixed-bottom-left p-3"
+        }`}
         onClick={() => setSidebarOpen(!sidebarOpen)}
         aria-expanded={sidebarOpen}
         aria-controls="image-details-panel"
         aria-label={sidebarOpen ? "Close details panel" : "Open details panel"}
         type="button"
       >
-        <ChevronLeft className={`w-6 h-6 transition-transform ${sidebarOpen ? "rotate-180" : ""}`} aria-hidden="true" />
+        {isDesktopPanel ? (
+          <ChevronLeft className={`w-6 h-6 transition-transform ${sidebarOpen ? "rotate-180" : ""}`} aria-hidden="true" />
+        ) : (
+          <Info className="w-6 h-6" aria-hidden="true" />
+        )}
       </button>
 
       <motion.aside
         id="image-details-panel"
         ref={sidebarRef}
-        className="fixed right-0 top-0 h-full w-80 lg:w-96 bg-background-paper/95 backdrop-blur-xl border-l border-border/50 shadow-glass p-8 safe-panel-pad overflow-y-auto z-40"
-        animate={{ x: sidebarOpen ? 0 : "100%" }}
-        initial={{ x: "100%" }}
+        className={`fixed z-40 bg-background-paper/95 backdrop-blur-xl shadow-glass overflow-y-auto safe-panel-pad ${
+          isDesktopPanel
+            ? "right-0 top-0 h-full w-80 lg:w-96 border-l border-border/50 p-8"
+            : "inset-x-0 bottom-0 max-h-[85dvh] w-full rounded-t-card border-t border-border/50 p-6 pt-4"
+        }`}
+        animate={
+          isDesktopPanel
+            ? { x: sidebarOpen ? 0 : "100%", y: 0 }
+            : { y: sidebarOpen ? 0 : "100%", x: 0 }
+        }
+        initial={isDesktopPanel ? { x: "100%", y: 0 } : { y: "100%", x: 0 }}
         transition={{ type: "spring", stiffness: 300, damping: 30 }}
         aria-hidden={!sidebarOpen}
       >
-        <div className="sticky top-0 pb-8 border-b border-border/50 mb-8 bg-background-paper/95">
-          <h2 className="font-display text-2xl font-bold text-primary mb-2">
+        {!isDesktopPanel && (
+          <div className="mx-auto mb-4 h-1.5 w-12 rounded-full bg-border" aria-hidden="true" />
+        )}
+        <div className="sticky top-0 pb-6 lg:pb-8 border-b border-border/50 mb-6 lg:mb-8 bg-background-paper/95">
+          <h2 className="font-display text-xl lg:text-2xl font-bold text-primary mb-2">
             {imageName}
           </h2>
           <div className="flex items-center gap-2 text-sm text-foreground-secondary mb-4">

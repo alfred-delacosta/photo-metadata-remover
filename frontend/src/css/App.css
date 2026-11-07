@@ -133,6 +133,7 @@ body {
 .safe-panel-pad {
   padding-top: max(2rem, calc(var(--safe-t) + 2rem));
   padding-bottom: max(2rem, calc(var(--safe-b) + 2rem));
+  padding-left: max(1.5rem, calc(var(--safe-l) + 0.5rem));
   padding-right: max(2rem, calc(var(--safe-r) + 0.5rem));
 }
 
@@ -171,9 +172,11 @@ body {
   border-radius: var(--radius-control);
 }
 
-.btn:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 8px 16px -4px rgb(var(--foreground) / 0.08);
+@media (hover: hover) and (pointer: fine) {
+  .btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 8px 16px -4px rgb(var(--foreground) / 0.08);
+  }
 }
 
 .btn:focus-visible {
