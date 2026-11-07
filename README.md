@@ -83,6 +83,7 @@ Follow these steps to set up and run the Photo Metadata Remover locally.
 
 ```plaintext
 photo-metadata-remover/
+├── brand/                     # Lifted Tag source artwork and font license
 ├── frontend/                  # React/Vite frontend
 │   ├── src/
 │   │   ├── components/        # FileUpload, ImgMediaCard
@@ -97,6 +98,12 @@ photo-metadata-remover/
 ├── README.md                  # You're here! 📖
 └── package.json               # Root scripts
 ```
+
+## Branding
+
+The mark is the approved Lifted Tag (direction B): a viewfinder around a photo, with a cyan tag lifting away. Favicons use the simplified small mark. Apple touch and maskable PWA icons are separate full-bleed files, and the rounded tile is only `purpose: any`. Source artwork, minimum sizes, and the Source Serif 4 license are in [`brand/README.md`](brand/README.md).
+
+Processing is unchanged: metadata is stripped on the server with Sharp.
 
 ## 🎨 Customization
 
@@ -121,6 +128,7 @@ ISC.
 - [Sharp](https://sharp.pixelplumbing.com/) for image processing.
 - [Tailwind CSS](https://tailwindcss.com/) for styling.
 - [React](https://reactjs.org/) and [Express](https://expressjs.com/) for frameworks.
+- Source Serif 4 (SIL Open Font License 1.1) for the display face and the outlined wordmark.
 
 ---
 

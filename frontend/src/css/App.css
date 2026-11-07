@@ -221,6 +221,18 @@ body {
   }
 }
 
+/* Lockup hover from the approved pack: link only, never a looping animation. */
+@media (prefers-reduced-motion: no-preference) {
+  .brand-mark {
+    transition: transform 180ms cubic-bezier(0.2, 0, 0, 1);
+  }
+
+  a:hover .brand-mark,
+  a:focus-visible .brand-mark {
+    transform: scale(1.05);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
