@@ -243,8 +243,22 @@ const FileUpload = ({ isDark, onToggleTheme }) => {
           <p className="text-sm font-medium text-foreground-secondary mb-2 md:mb-3 tracking-wide">
             Privacy-first image tools
           </p>
-          <h1 className="font-display text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-primary mb-3 md:mb-4">
-            Photo Metadata Remover
+          <h1 className="mb-3 md:mb-4">
+            <span className="sr-only">Photo Metadata Remover</span>
+            <img
+              src="/brand/lockup-light.svg"
+              alt=""
+              width={1614}
+              height={512}
+              className="mx-auto block h-auto w-auto max-h-24 max-w-full sm:max-h-28 md:max-h-32 lg:max-h-36 dark:hidden"
+            />
+            <img
+              src="/brand/lockup-dark.svg"
+              alt=""
+              width={1614}
+              height={512}
+              className="mx-auto hidden h-auto w-auto max-h-24 max-w-full sm:max-h-28 md:max-h-32 lg:max-h-36 dark:block"
+            />
           </h1>
           <p className="text-base md:text-xl text-foreground-secondary max-w-2xl mx-auto">
             Strip EXIF metadata and compress photos so they are easier and safer to share. Up to 5
