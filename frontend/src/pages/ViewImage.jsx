@@ -154,7 +154,7 @@ const ViewImage = ({ isDark, onToggleTheme }) => {
 
   if (loading) {
     return (
-      <div className="min-h-screen min-h-[100dvh] flex flex-col items-center justify-center">
+      <div className="safe-page safe-page-roomy min-h-screen min-h-[100dvh] flex flex-col items-center justify-center">
         <BrandMark />
         <ThemeToggle isDark={isDark} onToggleTheme={onToggleTheme} />
         <div className="text-center">
@@ -171,7 +171,7 @@ const ViewImage = ({ isDark, onToggleTheme }) => {
 
   if (!imageUrl) {
     return (
-      <div className="min-h-screen min-h-[100dvh] flex flex-col px-4">
+      <div className="safe-page safe-page-roomy min-h-screen min-h-[100dvh] flex flex-col">
         <BrandMark />
         <ThemeToggle isDark={isDark} onToggleTheme={onToggleTheme} />
         <main className="flex-1 flex items-center justify-center">
@@ -215,16 +215,16 @@ const ViewImage = ({ isDark, onToggleTheme }) => {
         />
       </motion.div>
 
-      <p className="fixed bottom-8 left-6 z-40 text-xs text-foreground-secondary bg-background-paper/90 border border-border rounded-control px-3 py-2 backdrop-blur-sm">
+      <p className="fixed safe-fixed-bottom-left z-40 text-xs text-foreground-secondary bg-background-paper/90 border border-border rounded-control px-3 py-2 backdrop-blur-sm">
         Esc closes panel. D downloads.
       </p>
 
-      <p className="fixed bottom-8 left-1/2 -translate-x-1/2 z-40 text-xs text-foreground-muted hidden sm:block">
+      <p className="fixed safe-fixed-bottom-center left-1/2 -translate-x-1/2 z-40 text-xs text-foreground-muted hidden sm:block">
         Copyright (c) {new Date().getFullYear()} Advanced Software and AI Solutions LLC
       </p>
 
       <button
-        className="fixed bottom-8 right-8 p-4 min-w-11 min-h-11 flex items-center justify-center bg-primary/95 backdrop-blur-sm rounded-card shadow-glass border border-primary text-primary-foreground hover:bg-primary z-50 focus-ring"
+        className="fixed safe-fixed-bottom-right p-4 min-w-11 min-h-11 flex items-center justify-center bg-primary/95 backdrop-blur-sm rounded-card shadow-glass border border-primary text-primary-foreground hover:bg-primary z-50 focus-ring"
         onClick={() => {
           const link = document.createElement("a");
           link.href = imageUrl;
@@ -239,7 +239,7 @@ const ViewImage = ({ isDark, onToggleTheme }) => {
 
       <button
         ref={toggleButtonRef}
-        className="fixed top-1/2 left-4 -translate-y-1/2 p-3 min-w-11 min-h-11 flex items-center justify-center bg-background-paper/90 backdrop-blur-sm rounded-card border border-border hover:border-primary/50 z-50 shadow-card focus-ring"
+        className="fixed safe-fixed-mid-left -translate-y-1/2 p-3 min-w-11 min-h-11 flex items-center justify-center bg-background-paper/90 backdrop-blur-sm rounded-card border border-border hover:border-primary/50 z-50 shadow-card focus-ring"
         onClick={() => setSidebarOpen(!sidebarOpen)}
         aria-expanded={sidebarOpen}
         aria-controls="image-details-panel"
@@ -252,7 +252,7 @@ const ViewImage = ({ isDark, onToggleTheme }) => {
       <motion.aside
         id="image-details-panel"
         ref={sidebarRef}
-        className="fixed right-0 top-0 h-full w-80 lg:w-96 bg-background-paper/95 backdrop-blur-xl border-l border-border/50 shadow-glass p-8 overflow-y-auto z-40"
+        className="fixed right-0 top-0 h-full w-80 lg:w-96 bg-background-paper/95 backdrop-blur-xl border-l border-border/50 shadow-glass p-8 safe-panel-pad overflow-y-auto z-40"
         animate={{ x: sidebarOpen ? 0 : "100%" }}
         initial={{ x: "100%" }}
         transition={{ type: "spring", stiffness: 300, damping: 30 }}

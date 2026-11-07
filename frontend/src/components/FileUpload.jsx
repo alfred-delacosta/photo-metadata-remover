@@ -230,7 +230,7 @@ const FileUpload = ({ isDark, onToggleTheme }) => {
   const rootProps = getRootProps();
 
   return (
-    <div className="min-h-screen min-h-[100dvh] flex flex-col py-8 px-4 sm:px-6 lg:px-8 max-w-6xl mx-auto">
+    <div className="safe-page min-h-screen min-h-[100dvh] flex flex-col max-w-6xl mx-auto">
       <ThemeToggle isDark={isDark} onToggleTheme={onToggleTheme} />
 
       <main id="main-content" className="flex-1 flex flex-col justify-center">
