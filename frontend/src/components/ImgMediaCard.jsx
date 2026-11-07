@@ -3,6 +3,7 @@ import { Eye, Share2, Download, Home, AlertCircle, ShieldCheck } from "lucide-re
 import toast from "react-hot-toast";
 import Countdown from "react-countdown";
 import { Link } from "react-router";
+import { downloadImage } from "../lib/downloadImage";
 
 /**
  * Result card: preview, size savings, download, and share.
@@ -127,14 +128,14 @@ export default function ImgMediaCard({ file, isResults = false, expTime }) {
           </p>
         </div>
         <div className="pt-4 mt-auto grid grid-cols-2 gap-2">
-          <a
-            href={imageLink}
-            download={imageName}
+          <button
+            type="button"
+            onClick={() => downloadImage(imageLink, imageName)}
             className="btn focus-ring flex items-center justify-center gap-2 p-3 bg-primary text-primary-foreground rounded-control text-sm font-medium"
           >
             <Download className="w-4 h-4" aria-hidden="true" />
             Download
-          </a>
+          </button>
           {!isResults && (
             <Link
               to="/"
