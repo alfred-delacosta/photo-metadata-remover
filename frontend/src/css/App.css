@@ -26,6 +26,11 @@
   --ease-in: cubic-bezier(0.3, 0, 0.8, 0.15);
   --radius-control: 4px;
   --radius-card: 8px;
+
+  --safe-t: env(safe-area-inset-top, 0px);
+  --safe-r: env(safe-area-inset-right, 0px);
+  --safe-b: env(safe-area-inset-bottom, 0px);
+  --safe-l: env(safe-area-inset-left, 0px);
 }
 
 .dark {
@@ -62,6 +67,73 @@ body {
   min-height: 100%;
   min-height: 100dvh;
   min-height: calc(var(--vh, 1vh) * 100);
+}
+
+/* Page shells: pad past notch / home indicator while keeping flex centering inside. */
+.safe-page {
+  padding-top: max(2rem, calc(var(--safe-t) + 0.75rem));
+  padding-bottom: max(2rem, calc(var(--safe-b) + 0.75rem));
+  padding-left: max(1rem, calc(var(--safe-l) + 1rem));
+  padding-right: max(1rem, calc(var(--safe-r) + 1rem));
+}
+
+@media (min-width: 640px) {
+  .safe-page {
+    padding-left: max(1.5rem, calc(var(--safe-l) + 1.5rem));
+    padding-right: max(1.5rem, calc(var(--safe-r) + 1.5rem));
+  }
+}
+
+@media (min-width: 1024px) {
+  .safe-page {
+    padding-left: max(2rem, calc(var(--safe-l) + 2rem));
+    padding-right: max(2rem, calc(var(--safe-r) + 2rem));
+  }
+}
+
+/* Secondary pages with fixed BrandMark need more top room than the home shell. */
+.safe-page-roomy {
+  padding-top: max(5rem, calc(var(--safe-t) + 3.5rem));
+  padding-bottom: max(5rem, calc(var(--safe-b) + 2rem));
+}
+
+.safe-fixed-top-left {
+  top: calc(1.5rem + var(--safe-t));
+  left: calc(1.5rem + var(--safe-l));
+}
+
+.safe-fixed-top-right {
+  top: calc(1.5rem + var(--safe-t));
+  right: calc(1.5rem + var(--safe-r));
+}
+
+.safe-fixed-bottom-left {
+  bottom: calc(2rem + var(--safe-b));
+  left: calc(1.5rem + var(--safe-l));
+}
+
+.safe-fixed-bottom-right {
+  bottom: calc(2rem + var(--safe-b));
+  right: calc(2rem + var(--safe-r));
+}
+
+.safe-fixed-bottom-center {
+  bottom: calc(2rem + var(--safe-b));
+}
+
+.safe-fixed-mid-left {
+  top: 50%;
+  left: calc(1rem + var(--safe-l));
+}
+
+.safe-footer {
+  padding-bottom: max(2rem, calc(var(--safe-b) + 0.75rem));
+}
+
+.safe-panel-pad {
+  padding-top: max(2rem, calc(var(--safe-t) + 2rem));
+  padding-bottom: max(2rem, calc(var(--safe-b) + 2rem));
+  padding-right: max(2rem, calc(var(--safe-r) + 0.5rem));
 }
 
 .font-display {
