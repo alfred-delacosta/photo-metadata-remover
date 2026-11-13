@@ -229,7 +229,15 @@ const ViewImage = ({ isDark, onToggleTheme }) => {
       </p>
 
       <p className="fixed safe-fixed-bottom-center left-1/2 -translate-x-1/2 z-40 text-xs text-foreground-muted hidden sm:block">
-        Copyright (c) {new Date().getFullYear()} Advanced Software and AI Solutions LLC
+        Copyright (c) {new Date().getFullYear()}{" "}
+        <a
+          href="https://advancedsoftwareandaisolutions.com"
+          rel="noopener noreferrer"
+          target="_blank"
+          className="text-primary underline-offset-2 hover:underline focus-ring rounded-sm"
+        >
+          Advanced Software and AI Solutions LLC
+        </a>
       </p>
 
       <button
